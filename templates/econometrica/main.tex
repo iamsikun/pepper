@@ -1,0 +1,131 @@
+% Econometrica Template
+% Official style: ecta.cls (from Wiley/Econometric Society)
+% Download: https://www.econometricsociety.org/publications/econometrica/information-authors
+%
+% Key requirements:
+%   - Abstract max 150 words
+%   - JEL classification codes required
+%   - Keywords required
+%   - No page limit (typical 40–60 pages)
+%   - All proofs in appendix unless central
+%   - Supplemental material allowed (separate file)
+
+\documentclass[final]{ecta}
+% Options: final (camera-ready), review (for submission/refereeing)
+
+% ===== PACKAGES =====
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{dcolumn}  % for decimal-aligned columns in tables
+
+% ===== THEOREM ENVIRONMENTS =====
+% Note: ecta.cls may define these already; adjust if conflicts occur
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{claim}{Claim}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\newtheorem{example}{Example}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newtheorem{observation}{Observation}
+
+% ===== CUSTOM MACROS =====
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+
+% ===== DOCUMENT METADATA =====
+\begin{document}
+
+\title{PAPER TITLE HERE}
+
+\author{
+  \name{Author One}
+  \affiliation{Department, Institution}
+  \email{email@institution.edu}
+  \and
+  \name{Author Two}
+  \affiliation{Department, Institution}
+  \email{email@institution.edu}
+}
+
+\date{}
+
+\maketitle
+
+% ===== ABSTRACT =====
+\begin{abstract}
+% Max 150 words. Structure: research question → method → findings → implications
+\input{sections/abstract_body}
+\end{abstract}
+
+\keywords{keyword1, keyword2, keyword3}  % 3–6 keywords
+
+\jelclass{C10, D80, L10}  % TODO: fill in appropriate JEL codes
+% Common JEL codes:
+% C10: Econometric and Statistical Methods
+% C73: Stochastic and Dynamic Games
+% D44: Auctions
+% D83: Search, Information, Knowledge
+% L10: Market Structure, Firm Strategy
+% M31: Marketing
+% R30: Real Estate Markets
+
+% ===== MAIN BODY =====
+\input{sections/introduction}
+
+\input{sections/related_work}
+
+\input{sections/background}       % Model setup
+
+\input{sections/methodology}      % Analysis / Equilibrium
+
+\input{sections/empirics}         % Empirical section (if applicable)
+
+\input{sections/conclusion}
+
+% ===== ACKNOWLEDGMENTS =====
+\begin{acks}[Acknowledgments]
+% TODO: Funding, data access, seminar participants
+\end{acks}
+
+% ===== REFERENCES =====
+\bibliographystyle{ecta}  % requires ecta.bst
+\bibliography{references}
+
+% ===== APPENDIX =====
+\appendix
+
+\section{Proofs}
+\label{app:proofs}
+\input{sections/appendix_proofs}
+
+\section{Additional Results and Robustness}
+\label{app:robustness}
+\input{sections/appendix_experiments}
+
+\end{document}
+% ========================================================
+
+%% SUPPLEMENTAL APPENDIX (separate file for Econometrica)
+%% Create supplement.tex with:
+%% \documentclass[supplement]{ecta}
+%% ...

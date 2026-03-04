@@ -1,0 +1,131 @@
+% ICML 2025 Template
+% Download icml2025.sty from: https://icml.cc/Conferences/2025/StyleAuthorInstructions
+%
+% Key ICML requirements:
+%   - 8 pages main body (not including references)
+%   - Unlimited references
+%   - 1 additional page for "Broader Impact / Societal Impact"
+%   - Double-blind review
+
+\documentclass{article}
+
+% ===== STYLE FILE =====
+\usepackage[accepted]{icml2025}
+% For submission (anonymous): \usepackage{icml2025}
+% For camera-ready:           \usepackage[accepted]{icml2025}
+
+% ===== STANDARD PACKAGES =====
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+
+% Math
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Tables
+\usepackage{multirow}
+
+% Figures
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+% ===== THEOREM ENVIRONMENTS =====
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+% ===== CUSTOM MACROS =====
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+
+% ===== ICML AUTHOR BLOCK =====
+% For camera-ready only (comment out for anonymous review):
+\icmltitlerunning{Short Running Title}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{PAPER TITLE HERE}
+
+% For camera-ready (remove for anonymous review):
+\begin{icmlauthorlist}
+\icmlauthor{Author One}{inst1}
+\icmlauthor{Author Two}{inst1,inst2}
+\end{icmlauthorlist}
+
+\icmlaffiliation{inst1}{Department, Institution One, City, Country}
+\icmlaffiliation{inst2}{Department, Institution Two, City, Country}
+
+\icmlcorrespondingauthor{Author One}{email@institution.edu}
+
+\icmlkeywords{keyword1, keyword2, keyword3, Machine Learning, ICML}
+
+\vskip 0.3in
+]
+
+% Print author names only for camera-ready:
+\printAffiliationsAndNotice{}
+% For anonymous: \printAffiliationsAndNotice{\icmlEqualContribution}
+
+% ===== ABSTRACT =====
+\input{sections/abstract}
+
+% ===== MAIN BODY =====
+\input{sections/introduction}
+
+\input{sections/related_work}
+
+\input{sections/background}
+
+\input{sections/methodology}
+
+\input{sections/experiments}
+
+\input{sections/conclusion}
+
+% ===== IMPACT STATEMENT (required for camera-ready) =====
+\section*{Impact Statement}
+This paper presents work whose goal is to advance the field of Machine Learning.
+There are many potential societal consequences of our work, none of which we
+feel must be specifically highlighted here.
+% TODO: Replace with actual impact statement
+
+% ===== ACKNOWLEDGMENTS (camera-ready only) =====
+\section*{Acknowledgments}
+% TODO: Add funding sources, compute credits, etc.
+
+% ===== REFERENCES =====
+\bibliography{references}
+\bibliographystyle{icml2025}
+
+% ===== APPENDIX =====
+\appendix
+\onecolumn  % switch to single column for appendix
+\input{sections/appendix_proofs}
+\input{sections/appendix_experiments}
+
+\end{document}

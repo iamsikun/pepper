@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pdflatex:*)",
+      "Bash(bibtex:*)",
+      "Bash(xelatex:*)",
+      "Bash(lualatex:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(zip:*)",
+      "Bash(cp:*)",
+      "Bash(mkdir:*)",
+      "Bash(cat:*)",
+      "WebSearch(*)",
+      "WebFetch(*)"
+    ],
+    "deny": []
+  },
+  "env": {
+    "PAPER_SYSTEM_VERSION": "1.0"
+  }
+}

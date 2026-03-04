@@ -1,0 +1,23 @@
+# .gitignore
+
+# Don't commit compiled outputs
+papers/*/camera-ready/*.pdf
+papers/*/submission.zip
+papers/*/*.aux
+papers/*/*.log
+papers/*/*.bbl
+
+# Don't commit venue style files (copyright)
+templates/**/*.sty
+templates/**/*.cls
+templates/**/*.bst
+
+# Don't follow symlinks into project repos
+projects/
+
+# Do commit everything else:
+# - .claude/ (agents, commands, settings)
+# - CLAUDE.md
+# - templates/**/*.tex  (your template scaffolds)
+# - papers/workspace/          (your paper drafts)
+# - literature/           (your literature notes)
