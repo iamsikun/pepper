@@ -1,0 +1,103 @@
+% =============================================================================
+% Interpretable and Tradable Factors from Mutual Funds via Deep Autoencoding
+% with Alternative Data
+% Target Venue: NeurIPS 2026
+% Assembled: 2026-03-04
+% =============================================================================
+
+\documentclass{article}
+
+% NeurIPS style (anonymous submission — no final option)
+\usepackage{neurips_2025}
+
+% --- Encoding ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+% --- Math ---
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+
+% --- Algorithms ---
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% --- Tables ---
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tabularx}
+
+% --- Figures ---
+\usepackage{graphicx}
+\usepackage{subcaption}
+
+% --- Lists ---
+\usepackage{enumitem}
+
+% --- Typography ---
+\usepackage{microtype}
+\usepackage{nicefrac}
+\usepackage{xcolor}
+
+% --- Hyperlinks (loaded last among typical packages) ---
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{url}
+
+% --- Theorem environments ---
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+
+% --- Useful macros ---
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\inner}[2]{\langle #1, #2 \rangle}
+
+% =============================================================================
+% Document metadata
+% =============================================================================
+\title{Interpretable and Tradable Factors from Mutual Funds\\via Deep Autoencoding with Alternative Data}
+
+\author{%
+  Anonymous Author(s)
+}
+
+\date{}
+
+% =============================================================================
+\begin{document}
+
+\maketitle
+
+% --- Abstract ---
+\input{sections/abstract}
+
+% --- Main body ---
+\input{sections/introduction}
+
+\input{sections/related_work}
+
+\input{sections/methodology}
+
+\input{sections/experiments}
+
+\input{sections/conclusion}
+
+% --- References ---
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+% --- Appendix ---
+\appendix
+\input{sections/appendix_experiments}
+
+\end{document}
