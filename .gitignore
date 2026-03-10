@@ -1,23 +1,24 @@
-# .gitignore
+# Runtime paper workspace (user opts in to version control)
+paper/
 
-# Don't commit compiled outputs
-papers/*/camera-ready/*.pdf
-papers/*/submission.zip
-papers/*/*.aux
-papers/*/*.log
-papers/*/*.bbl
+# Venue style files (copyright — user downloads)
+.paperwriter/templates/**/*.sty
+.paperwriter/templates/**/*.cls
+.paperwriter/templates/**/*.bst
 
-# Don't commit venue style files (copyright)
-templates/**/*.sty
-templates/**/*.cls
-templates/**/*.bst
+# LaTeX build artifacts
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdf
 
-# Don't follow symlinks into project repos
-projects/
-
-# Do commit everything else:
-# - .claude/ (agents, commands, settings)
-# - CLAUDE.md
-# - templates/**/*.tex  (your template scaffolds)
-# - papers/workspace/          (your paper drafts)
-# - literature/           (your literature notes)
+# OS
+.DS_Store

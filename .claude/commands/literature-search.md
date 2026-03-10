@@ -9,31 +9,33 @@ synthesize the findings, and populate the bibliography.
 
 ## Instructions
 
-1. Read `workspace/current-paper.md` to get the topic and contributions.
+1. Read `paper/shared/context.md` to get the topic and contributions.
+2. Read `paper/state.yaml` to confirm the active target and current stage.
 
-2. Use the `literature-reviewer` subagent to:
+3. Use the `literature-reviewer` subagent to:
    - Search for papers on the main topic
    - Search for papers on each key method or dataset used
-   - Search for papers at the target venue (NeurIPS/ICML/etc.) in the same area
+   - Search for papers at the target venue in the same area
    - Find the key baselines the paper will compare against
 
-3. For papers that span multiple themes, spawn multiple `literature-reviewer` agents
+4. For papers that span multiple themes, spawn multiple `literature-reviewer` agents
    in parallel — one per research thread:
-   
+
    Example for an ML paper on "robust optimization for bandits":
    - Agent 1: "robust optimization machine learning"
-   - Agent 2: "bandit algorithms exploration exploitation"  
+   - Agent 2: "bandit algorithms exploration exploitation"
    - Agent 3: "distributionally robust optimization"
 
-4. After the agents complete:
-   - Consolidate all BibTeX into `research/literature/references.bib`
-   - Update `workspace/current-paper.md` to check off literature review
+5. After the agents complete:
+   - Consolidate all BibTeX into `paper/shared/references-master.bib`
+   - Update `paper/state.yaml` to set the active target's stage to `literature`
 
-5. Ask the user: "Literature review is complete. I found [N] papers.
+6. Ask the user: "Literature review is complete. I found [N] papers.
    Key gaps identified: [list].
    Shall I proceed with paper outlining?"
 
-6. If yes, invoke the `paper-outliner` agent.
+7. If yes, invoke the `paper-outliner` agent. After outliner completes,
+   update `paper/state.yaml` to set the active target's stage to `outlining`.
 
 ## Parallel Search Strategy
 

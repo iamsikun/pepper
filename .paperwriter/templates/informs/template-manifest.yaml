@@ -1,0 +1,34 @@
+venue: INFORMS (Marketing Science / Management Science / Operations Research)
+format: single-column
+page_limit: 40
+audience: marketing, management-science, operations
+
+style_files:
+  required:
+    - informs4.cls
+  optional:
+    - informs4.bst
+
+sections:
+  required:
+    - abstract.tex
+    - introduction.tex
+    - methodology.tex
+    - empirics.tex
+    - conclusion.tex
+  optional:
+    - related_work.tex
+    - background.tex
+    - appendix_proofs.tex
+    - appendix_experiments.tex
+
+anonymization:
+  review: true
+  camera_ready: false
+
+notes:
+  - "Use [mnsc] option for Management Science, [mksc] for Marketing Science, [opre] for Operations Research"
+  - "Abstract must be 200 words or fewer"
+  - "5 keywords required"
+  - "History block (received/revised/accepted) required for camera-ready"
+  - "Download informs4.cls from the INFORMS website"

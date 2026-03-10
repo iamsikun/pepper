@@ -1,32 +1,45 @@
 # Academic Paper Writing System
 
-A Claude Code subagent system for writing camera-ready academic papers in
-**machine learning**, **marketing**, and **operations research**.
+An installable Claude Code subagent system for writing camera-ready academic papers in
+**machine learning**, **marketing**, **economics**, and **operations research**.
 
 Targets: NeurIPS · ICML · ICLR · Econometrica · Marketing Science · Management Science
+
+---
+
+## Installation
+
+```bash
+# From this repository, install into your project repo:
+.paperwriter/scripts/install.sh /path/to/your/project
+
+# Or install into the current directory:
+.paperwriter/scripts/install.sh .
+```
+
+This copies `.claude/`, `.paperwriter/`, and `CLAUDE.md` into your project. No symlinks, no package managers.
 
 ---
 
 ## Quick Start
 
 ```bash
-# 1. Clone / copy this system into your project directory
-# 2. Open Claude Code in this directory
+# Open Claude Code in your project repo
 claude
 
-# 3. Initialize a new paper
+# 1. Initialize paper workspace (scans your repo, builds source map)
 /new-paper
 
-# 4. Run literature search
+# 2. Run literature search
 /literature-search
 
-# 5. Draft the full paper
+# 3. Draft the full paper
 /draft-paper
 
-# 6. Get peer review feedback
-# Invoke peer-reviewer agent: "Use the peer-reviewer agent on my paper"
+# 4. Get peer review feedback
+/review-paper
 
-# 7. Produce camera-ready submission
+# 5. Produce camera-ready submission
 /camera-ready
 ```
 
@@ -35,10 +48,10 @@ claude
 ## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                     ORCHESTRATION LAYER                      │
-│  /new-paper → /literature-search → /draft-paper → /camera-ready │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                       ORCHESTRATION LAYER                        │
+│  /new-paper → /literature-search → /draft-paper → /camera-ready  │
+└──────────────────────────────────────────────────────────────────┘
          │               │                │              │
          ▼               ▼                ▼              ▼
   ┌──────────┐   ┌──────────────┐  ┌──────────┐  ┌──────────┐
@@ -65,15 +78,15 @@ claude
 
 | Agent | Writes | When to Use |
 |---|---|---|
-| `literature-reviewer` | `research/literature/*.md`, BibTeX | Finding related work |
-| `paper-outliner` | `workspace/paper-outline.md` | Structuring the paper |
+| `literature-reviewer` | `paper/shared/literature/*.md`, BibTeX | Finding related work |
+| `paper-outliner` | `paper/<target>/outline.md` | Structuring the paper |
 | `intro-writer` | `abstract.tex`, `introduction.tex` | After outline is done |
 | `technical-writer` | `related_work.tex`, `methodology.tex`, `appendix_proofs.tex` | Core technical content |
 | `empirics-writer` | `experiments.tex` / `empirics.tex` | Results and experiments |
-| `citation-manager` | `references.bib` | Before assembly |
-| `latex-assembler` | `papers/<slug>/main.tex` | Final assembly |
-| `venue-formatter` | `camera-ready/` folder | Submission formatting |
-| `peer-reviewer` | `review.md`, `revision-plan.md` | Quality check |
+| `citation-manager` | `paper/<target>/references.bib` | Before assembly |
+| `latex-assembler` | `paper/<target>/main.tex` | Final assembly |
+| `venue-formatter` | `paper/<target>/camera-ready/` | Submission formatting |
+| `peer-reviewer` | `paper/<target>/review.md`, `revision-plan.md` | Quality check |
 
 ---
 
@@ -81,10 +94,13 @@ claude
 
 | Command | Purpose |
 |---|---|
-| `/new-paper` | Initialize a new paper project |
+| `/new-paper` | Scan repo, build source map, initialize paper workspace |
 | `/literature-search` | Run literature search + invoke outliner |
 | `/draft-paper` | Draft all sections in parallel + assemble |
+| `/review-paper` | Run peer reviewer on active target |
 | `/camera-ready` | Final formatting + submission package |
+| `/set-target` | Switch active target (conference/journal) |
+| `/create-journal-version` | Bootstrap journal version from shared materials |
 
 ---
 
@@ -104,111 +120,87 @@ claude
 | Marketing Science | `informs4.cls` | Yes |
 | Management Science | `informs4.cls` | Yes |
 
-> **Note:** You must download the official `.sty` / `.cls` files from each venue's website
-> and place them in the appropriate `templates/<venue>/` folder. These files cannot be
-> distributed with this system due to copyright.
+> **Note:** Download official `.sty`/`.cls` files from each venue's website and place them in `.paperwriter/templates/<venue>/`. These files cannot be distributed due to copyright.
 
 ---
 
 ## File Structure
 
+### Scaffold files (installed into your project)
+
 ```
-academic-paper-system/
-├── CLAUDE.md                    ← Main system context (read by Claude Code)
-├── README.md                    ← This file
+your-project/
 ├── .claude/
-│   ├── agents/                  ← 9 specialized subagents
-│   │   ├── literature-reviewer.md
-│   │   ├── paper-outliner.md
-│   │   ├── intro-writer.md
-│   │   ├── technical-writer.md
-│   │   ├── empirics-writer.md
-│   │   ├── citation-manager.md
-│   │   ├── latex-assembler.md
-│   │   ├── venue-formatter.md
-│   │   └── peer-reviewer.md
-│   ├── commands/                ← 4 slash commands
-│   │   ├── new-paper.md
-│   │   ├── literature-search.md
-│   │   ├── draft-paper.md
-│   │   └── camera-ready.md
-│   └── settings.json
-├── templates/                   ← LaTeX templates per venue
-│   ├── neurips/main.tex
-│   ├── icml/main.tex
-│   ├── iclr/main.tex
-│   ├── informs/main.tex         ← Marketing Science & Management Science
-│   └── econometrica/main.tex
-├── workspace/                   ← Active paper workspace (auto-created)
-│   ├── current-paper.md         ← Pipeline state tracker
-│   ├── paper-outline.md
-│   └── sections/                ← Individual .tex section files
-├── research/
-│   └── literature/              ← Literature review outputs + master BibTeX
-└── papers/                      ← Assembled papers
-    └── <paper-slug>/
-        ├── main.tex
-        ├── references.bib
-        ├── figures/
-        └── camera-ready/        ← Final submission package
+│   ├── agents/                  ← 9 specialized subagent prompts
+│   ├── commands/                ← slash command prompts
+│   └── settings.json            ← tool permissions
+├── .paperwriter/
+│   ├── config.yaml              ← system defaults (venue registry, stages)
+│   ├── templates/               ← venue-specific LaTeX templates
+│   │   ├── neurips/
+│   │   ├── icml/
+│   │   ├── iclr/
+│   │   ├── econometrica/
+│   │   └── informs/
+│   └── scripts/
+│       ├── install.sh           ← installer script
+│       └── validate.sh          ← validation script
+└── CLAUDE.md                    ← system instructions for Claude Code
+```
+
+### Runtime files (created by `/new-paper`)
+
+```
+your-project/
+└── paper/
+    ├── state.yaml               ← active target + per-target stages
+    ├── shared/
+    │   ├── context.md           ← title, topic, contributions, source map
+    │   ├── claims.md            ← research claims and evidence links
+    │   ├── literature/          ← survey markdown files
+    │   ├── references-master.bib
+    │   ├── figure-plan.md
+    │   ├── table-plan.md
+    │   └── evidence/
+    ├── conference/              ← conference target
+    │   ├── target.yaml
+    │   ├── outline.md
+    │   ├── sections/
+    │   ├── figures/
+    │   ├── references.bib
+    │   ├── main.tex
+    │   └── camera-ready/
+    └── journal/                 ← (optional) journal target
+        └── [same structure]
 ```
 
 ---
 
-## Workflow Detail
+## Workflow
 
 ### Phase 1: Setup
-```
-/new-paper  →  Creates workspace/current-paper.md
-            →  Copies venue template
-            →  Initializes directory structure
-```
+`/new-paper` scans your repo, discovers project materials, and writes a source map so all agents know where to find things.
 
 ### Phase 2: Research
-```
-/literature-search  →  [parallel] literature-reviewer × 2-3 threads
-                    →  Consolidated references.bib
-                    →  paper-outliner creates paper-outline.md
-```
+`/literature-search` spawns parallel literature-reviewer agents, consolidates bibliography, then invokes paper-outliner.
 
 ### Phase 3: Drafting (parallel)
-```
-/draft-paper  →  [parallel] intro-writer
-              →  [parallel] technical-writer  (related work + method + proofs)
-              →  [parallel] empirics-writer   (experiments/empirics)
-              →  [sequential] citation-manager
-              →  [sequential] latex-assembler
-```
+`/draft-paper` spawns intro-writer, technical-writer, and empirics-writer in parallel. Then runs citation-manager and latex-assembler sequentially.
 
 ### Phase 4: Quality Check
-```
-peer-reviewer  →  review.md  (scores, weaknesses, required changes)
-               →  revision-plan.md
-```
+`/review-paper` runs the peer-reviewer agent and produces a review + revision plan.
 
 ### Phase 5: Camera-Ready
-```
-/camera-ready  →  citation-manager (final pass)
-               →  venue-formatter  (style, page count, checklist)
-               →  Compilation check
-               →  papers/<slug>/submission.zip
-```
+`/camera-ready` runs final citation check, venue formatting, compilation, and produces a submission package.
 
 ---
 
-## Tips
+## Multi-Target Support
 
-- **Invoke agents explicitly** when you want specific control:
-  `"Use the technical-writer agent to write the methodology section for a Bayesian optimization paper"`
+One project can have up to two publication targets: conference and journal. They share research materials (`paper/shared/`) but maintain separate prose and builds.
 
-- **For revisions**, invoke the relevant agent directly:
-  `"Use the empirics-writer agent to add a robustness check using [X]"`
-
-- **Token efficiency**: Each agent has its own context window, so parallel search
-  won't exhaust your main context.
-
-- **Real results**: Agents write placeholder text around `% TODO:` markers for
-  actual figures and numbers. Fill these in after running your real experiments.
+- `/create-journal-version` — bootstrap a journal version
+- `/set-target` — switch active target
 
 ---
 
@@ -216,11 +208,10 @@ peer-reviewer  →  review.md  (scores, weaknesses, required changes)
 
 - Claude Code installed and running
 - LaTeX distribution (TeX Live or MiKTeX) for compilation
-- Venue style files downloaded (see templates/ for which files are needed)
+- Venue style files downloaded (see `.paperwriter/templates/` for which files are needed)
 
 ---
 
 ## Version
 
-System v1.0 — Designed for 2025 submission cycles.
-Update venue style files each year as venues release new templates.
+System v2.0 — Project-local installable scaffold.

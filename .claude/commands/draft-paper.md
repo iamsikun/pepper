@@ -9,44 +9,44 @@ then assembles everything into a compilable LaTeX document.
 
 ## Prerequisites
 
-Before running, verify `workspace/current-paper.md` shows:
-- [x] Literature review complete
-- [x] Paper outline complete
-
+Read `paper/state.yaml` and verify the active target's stage is at least `outlining`.
 If not, stop and ask the user to run `/literature-search` first.
+
+Read `paper/<active_target>/outline.md` to confirm the outline exists.
 
 ## Parallel Drafting Strategy
 
 Spawn three section-writing agents simultaneously:
 
 **Agent 1 — `intro-writer`:**
-Write `workspace/sections/abstract.tex` and `workspace/sections/introduction.tex`
+Write `paper/<active_target>/sections/abstract.tex` and `paper/<active_target>/sections/introduction.tex`
 
 **Agent 2 — `technical-writer`:**
 Write:
-- `workspace/sections/related_work.tex`
-- `workspace/sections/background.tex` (if needed per outline)
-- `workspace/sections/methodology.tex`
-- `workspace/sections/appendix_proofs.tex`
+- `paper/<active_target>/sections/related_work.tex`
+- `paper/<active_target>/sections/background.tex` (if needed per outline)
+- `paper/<active_target>/sections/methodology.tex`
+- `paper/<active_target>/sections/appendix_proofs.tex`
 
 **Agent 3 — `empirics-writer`:**
 Write:
-- `workspace/sections/experiments.tex` (ML) or `workspace/sections/empirics.tex` (econ)
-- `workspace/sections/appendix_experiments.tex`
+- `paper/<active_target>/sections/experiments.tex` (ML) or `paper/<active_target>/sections/empirics.tex` (econ)
+- `paper/<active_target>/sections/appendix_experiments.tex`
 
 After all three complete:
 
 **Agent 4 — `technical-writer`:**
-Write `workspace/sections/conclusion.tex`
+Write `paper/<active_target>/sections/conclusion.tex`
 (conclusion should reference what was actually written in other sections)
 
 ## Post-Drafting Steps
 
 After all sections are drafted:
 
-1. Run `citation-manager` to clean and verify all citations
-2. Run `latex-assembler` to produce `papers/<slug>/main.tex`
+1. Run `citation-manager` to audit `paper/<active_target>/sections/*.tex` and produce `paper/<active_target>/references.bib`
+2. Run `latex-assembler` with template from `.paperwriter/templates/<venue>/` to produce `paper/<active_target>/main.tex`
 3. Attempt compilation and report results to user
+4. Update `paper/state.yaml` to set the active target's stage to `drafting`
 
 ## Reporting
 

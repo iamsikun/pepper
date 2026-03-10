@@ -1,69 +1,118 @@
 # /new-paper
 
-Initialize a new paper project. Run this first before any other commands.
+Initialize the paper workspace for this project. Run this first before any other commands.
 
 ## What This Does
 
-Sets up the workspace for a new paper, captures key information, and prepares the
-directory structure for the full pipeline.
+Scans the repository to discover project materials, captures key information from the user,
+and creates the `paper/` directory structure with a source map for all downstream agents.
 
 ## Instructions
 
-First, ask the user if this paper isconnected to an existing project in `projects/`? If yes, which one?
-Then, scan the `/docs/` folder in that project for `context.md`. 
-If there is one, find the answers to the following questions from `context.md`: 
+### Step 1: Scan the Repository
+
+Scan the repo tree, excluding `.git/`, `.claude/`, `.paperwriter/`, `paper/`, and `node_modules/`.
+Classify discovered directories by name patterns:
+
+| Pattern | Category |
+|---|---|
+| `docs/`, `notes/`, `writeup/` | Documentation |
+| `src/`, `lib/`, `code/` | Source code |
+| `results/`, `output/`, `experiments/`, `logs/` | Experiment results |
+| `figures/`, `plots/`, `images/`, `viz/` | Figures |
+| `data/`, `datasets/` | Data |
+| `scripts/`, `bin/` | Scripts |
+| `tests/`, `test/` | Tests |
+
+Present the discovered source map to the user for confirmation and edits.
+
+### Step 2: Gather Paper Information
+
+Ask the user for:
 1. **Paper Title** (working title is fine)
-2. **Research Topic** — 2–3 sentence description of what the paper is about
-3. **Key Contributions** — what are the 2–4 main things this paper claims to do/show/prove?
+2. **Research Topic** — 2-3 sentence description
+3. **Key Contributions** — 2-4 main claims
 4. **Target Venue** — one of: NeurIPS, ICML, ICLR, Econometrica, Marketing Science, Management Science
-5. **Paper Type** — Modeling / Theory / Empirical / Theory+Experiments / Methodology
-6. **Connected Project** - which project symlink is related to this 
+5. **Paper Type** — Methodology / Theory / Empirical / Theory+Experiments
 
-If there are no answers to these questions or the answers are not clear, ask the users. 
+Determine the target name from the venue:
+- ML conferences (NeurIPS, ICML, ICLR) → `conference`
+- Journals (Econometrica, Marketing Science, Management Science) → `journal`
 
+### Step 3: Create Directory Structure
 
-Then, create the structure specified in the paper management section from CLAUDE.md. 
-
-Finally, write the `papers/<slug>/workspace/current-paper.md` file with this template:
-
-```markdown
-# Current Paper
-
-## Metadata
-- **Title:** [title]
-- **Slug:** [slug]
-- **Venue:** [venue]
-- **Type:** [type]
-- **Created:** [today's date]
-
-## Research Topic
-[2–3 sentences]
-
-## Key Contributions
-1. [Contribution 1 — be specific]
-2. [Contribution 2]
-3. [Contribution 3]
-
-## Pipeline Status
-- [ ] Literature review (`/literature-search`)
-- [ ] Paper outline (`paper-outliner` agent)
-- [ ] Introduction + Abstract (`intro-writer` agent)
-- [ ] Technical sections (`technical-writer` agent)
-- [ ] Experiments/Empirics (`empirics-writer` agent)
-- [ ] Citations (`citation-manager` agent)
-- [ ] Assembly (`latex-assembler` agent)
-- [ ] Venue formatting (`venue-formatter` agent)
-- [ ] Peer review (`peer-reviewer` agent)
-- [ ] Camera-ready (`/camera-ready`)
-
-## File Locations
-- Sections: `papers/<slug>/workspace/sections/`
-- Literature: `literature/`
-- Assembled: `papers/<slug>/main.tex`
-- Camera-ready: `papers/<slug>/camera-ready/`
-
-## Notes
-[Any special instructions or constraints for this paper]
+```bash
+mkdir -p paper/shared/literature
+mkdir -p paper/shared/evidence
+mkdir -p paper/<target>/sections
+mkdir -p paper/<target>/figures
 ```
 
-7. Confirm setup is complete and tell the user to run `/literature-search` next.
+### Step 4: Write State Files
+
+**`paper/state.yaml`:**
+```yaml
+active_target: <target>
+initialized: true
+targets:
+  <target>:
+    stage: init
+    created: <today's date>
+```
+
+**`paper/shared/context.md`:**
+```markdown
+# Paper Context
+
+## Title
+<title>
+
+## Topic
+<2-3 sentences>
+
+## Contributions
+1. <contribution 1>
+2. <contribution 2>
+3. <contribution 3>
+
+## Paper Type
+<type>
+
+## Source Map
+
+The following paths in this repository contain materials relevant to the paper.
+Agents should read from these locations when they need project context.
+
+- Documentation: <discovered doc paths>
+- Source code: <discovered src paths>
+- Experiment results: <discovered results paths>
+- Figures: <discovered figure paths>
+- Data: <discovered data paths>
+- Scripts: <discovered script paths>
+
+## Key Files
+<user can annotate important files here>
+```
+
+**`paper/<target>/target.yaml`:**
+```yaml
+name: <target>
+venue: <venue name and year>
+template: <venue template key: neurips, icml, iclr, econometrica, informs>
+mode: blind
+page_limit: <from venue requirements>
+audience: <ml, econometrics, marketing, management-science, operations>
+```
+
+### Step 5: Initialize Shared Files
+
+Create empty starter files:
+- `paper/shared/claims.md` — with header `# Claims and Evidence`
+- `paper/shared/figure-plan.md` — with header `# Figure Plan`
+- `paper/shared/table-plan.md` — with header `# Table Plan`
+- `paper/shared/references-master.bib` — empty file
+
+### Step 6: Confirm
+
+Tell the user: "Paper workspace initialized. Source map written to `paper/shared/context.md`.
+Run `/literature-search` next to begin the literature review."

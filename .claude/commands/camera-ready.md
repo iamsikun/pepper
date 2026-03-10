@@ -5,13 +5,14 @@ Prepare the final camera-ready submission package for the target venue.
 ## What This Does
 
 Takes the assembled paper through final formatting, verification, and packaging
-to produce a submission-ready ZIP file.
+to produce a submission-ready package.
 
 ## Prerequisites
 
-Verify before starting:
-- `papers/<slug>/main.tex` exists and compiles
-- `papers/<slug>/references.bib` is complete
+Read `paper/state.yaml` to get the active target.
+Verify:
+- `paper/<active_target>/main.tex` exists and compiles
+- `paper/<active_target>/references.bib` is complete
 - User has confirmed all TODO placeholders are resolved
 
 If TODOs remain, alert the user and list them. Ask for confirmation before proceeding.
@@ -26,7 +27,7 @@ Invoke `citation-manager` one final time:
 
 ### Step 2: Venue Formatting
 Invoke `venue-formatter` to:
-- Apply the correct year's style file
+- Apply the correct year's style file from `.paperwriter/templates/<venue>/`
 - Check page limits (count carefully!)
 - Add/remove anonymization as appropriate
 - Add acknowledgments section (camera-ready only)
@@ -35,7 +36,7 @@ Invoke `venue-formatter` to:
 
 ### Step 3: Final Compilation
 ```bash
-cd papers/<slug>/camera-ready
+cd paper/<active_target>/camera-ready
 pdflatex main.tex
 bibtex main
 pdflatex main.tex
@@ -63,7 +64,7 @@ Read through the compiled PDF and verify:
 - [ ] Section numbering is correct
 - [ ] All figures appear, are readable, and have captions
 - [ ] All tables appear, are formatted properly
-- [ ] All equations are properly formatted (no overlapping symbols)
+- [ ] All equations are properly formatted
 - [ ] Theorem/Lemma/Proposition boxes appear correctly
 - [ ] Algorithm box appears correctly
 
@@ -84,17 +85,13 @@ Read through the compiled PDF and verify:
 ### Step 5: Create Submission Package
 
 ```bash
-cd papers/<slug>/camera-ready
-# Create zip with all required files
+cd paper/<active_target>/camera-ready
 zip -r ../submission.zip main.tex references.bib *.sty *.cls figures/
 ```
 
-Report: "Camera-ready package created at `papers/<slug>/submission.zip`.
+Report: "Camera-ready package created at `paper/<active_target>/submission.zip`.
 Page count: [N]/[limit]. Ready for submission to [venue]."
 
-### Step 6: Update Current Paper Status
+### Step 6: Update State
 
-Update `workspace/current-paper.md`:
-- Mark camera-ready as complete
-- Record final page count
-- Note submission date
+Update `paper/state.yaml` to set the active target's stage to `camera-ready`.
