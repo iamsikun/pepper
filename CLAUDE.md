@@ -17,22 +17,27 @@
 This system uses a pipeline of specialized subagents to produce camera-ready academic papers. The pipeline is:
 
 ```
-[/new-paper] → literature-reviewer → paper-outliner
-                                         ↓
-                         ┌───────────────┼───────────────┐
-                    intro-writer   technical-writer  empirics-writer
-                         └───────────────┼───────────────┘
-                                         ↓
-                              citation-manager
-                                         ↓
-                              latex-assembler
-                                         ↓
-                              venue-formatter
-                                         ↓
-                              peer-reviewer
-                                         ↓
-                           [camera-ready output]
+[/new-paper] ─────────┐
+                       ↓
+[/import-paper] → paper-outliner ──→ (retrospective outline)
+                       ↓
+       ┌───────────────┼───────────────┐
+  intro-writer   technical-writer  empirics-writer
+       └───────────────┼───────────────┘
+                       ↓
+            citation-manager
+                       ↓
+            latex-assembler
+                       ↓
+            venue-formatter
+                       ↓
+            peer-reviewer
+                       ↓
+         [camera-ready output]
 ```
+
+Note: `/new-paper` feeds into the full pipeline (literature → outlining → drafting).
+`/import-paper` ingests an existing paper and enters mid-stream — "Review" mode skips to `drafting` (go straight to `/review-paper`), "Revise" mode enters at `outlining`.
 
 Pipeline state is tracked in `paper/state.yaml`. Each target (conference/journal) has its own stage.
 
@@ -172,6 +177,11 @@ Users must download official `.sty`/`.cls` files from venue websites and place t
 ## Pipeline Stages
 
 Each target progresses through: `init` → `literature` → `outlining` → `drafting` → `review` → `camera-ready` → `done`
+
+`/import-paper` allows entering the pipeline mid-stream:
+- **Review** mode → enters at `drafting` (sections already exist)
+- **Revise** mode → enters at `outlining` (retrospective outline generated, user restructures)
+- **Retarget** mode → enters at `drafting` (adapt for a different venue)
 
 Commands enforce prerequisites based on the current stage.
 <!-- pepper:end -->

@@ -28,6 +28,8 @@ uv run pepper sync
 
 ## Quick Start
 
+### Writing from scratch
+
 ```bash
 # Open Claude Code in your project repo
 claude
@@ -51,6 +53,20 @@ claude
 /camera-ready
 ```
 
+### Importing an existing paper
+
+```bash
+claude
+
+# 1. Import your existing .tex/.bib files into the pipeline
+/import-paper
+
+# 2. Choose an import mode:
+#    - Review:   get feedback on your draft      → /review-paper
+#    - Revise:   restructure/rewrite sections     → edit outline, then /draft-paper
+#    - Retarget: adapt for a different venue       → /create-journal-version
+```
+
 ---
 
 ## System Architecture
@@ -59,7 +75,7 @@ claude
 ┌──────────────────────────────────────────────────────────────────┐
 │                       ORCHESTRATION LAYER                        │
 │  /new-paper → /literature-search → /draft-paper → /camera-ready   │
-│                                    /revise-paper, /update-results │
+│  /import-paper ──────────────────↗ /revise-paper, /update-results │
 └──────────────────────────────────────────────────────────────────┘
          │               │                │              │
          ▼               ▼                ▼              ▼
@@ -109,6 +125,7 @@ claude
 | Command | Purpose |
 |---|---|
 | `/new-paper` | Scan repo, build source map, initialize paper workspace |
+| `/import-paper` | Import an existing `.tex`/`.bib` paper into the pipeline |
 | `/literature-search` | Run literature search + invoke outliner |
 | `/draft-paper` | Draft all sections in parallel + assemble |
 | `/review-paper` | Run peer reviewer on active target |
@@ -164,7 +181,7 @@ your-project/
 └── CLAUDE.md                    ← system instructions for Claude Code
 ```
 
-### Runtime files (created by `/new-paper`)
+### Runtime files (created by `/new-paper` or `/import-paper`)
 
 ```
 your-project/
@@ -202,6 +219,8 @@ your-project/
 
 ### Phase 1: Setup
 `/new-paper` scans your repo, discovers project materials, and writes a source map so all agents know where to find things.
+
+**Alternative:** `/import-paper` ingests an existing LaTeX paper into the `paper/` structure. It decomposes sections, copies bibliography and figures, and enters the pipeline mid-stream (at `drafting` for review/retarget, or `outlining` for restructuring).
 
 ### Phase 2: Research
 `/literature-search` spawns parallel literature-reviewer agents, consolidates bibliography, then invokes paper-outliner.

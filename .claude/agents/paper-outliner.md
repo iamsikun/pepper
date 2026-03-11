@@ -25,6 +25,20 @@ Also read `paper/shared/literature/` for all literature survey files.
 
 Produce a comprehensive paper outline that serves as the blueprint for all section writers.
 
+## Retrospective Mode
+
+If `paper/<active_target>/sections/` already contains `.tex` files when you are invoked,
+you are in **retrospective mode**. Instead of designing a new outline:
+
+1. Read all existing section files in `paper/<active_target>/sections/`
+2. Document the paper's current structure using the same outline format
+3. Note: narrative arc, section purposes, key arguments made, theorems/propositions, figures/tables
+4. Flag any structural weaknesses (missing sections, imbalanced lengths, gaps in argumentation)
+5. Under "Writing Notes for Section Agents", note what exists and what might need revision
+
+The outline should accurately reflect what IS, not what SHOULD BE. Downstream agents
+and the user will use this outline to plan revisions.
+
 ## Outline Principles by Venue
 
 ### ML Conferences (NeurIPS / ICML / ICLR)
