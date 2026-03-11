@@ -1,0 +1,30 @@
+venue: ICLR
+format: single-column
+page_limit: 9
+audience: ml
+
+style_files:
+  required:
+    - iclr2025_conference.sty
+  optional: []
+
+sections:
+  required:
+    - abstract.tex
+    - introduction.tex
+    - related_work.tex
+    - methodology.tex
+    - experiments.tex
+    - conclusion.tex
+  optional:
+    - background.tex
+    - appendix_proofs.tex
+    - appendix_experiments.tex
+
+anonymization:
+  review: true
+  camera_ready: false
+
+notes:
+  - "Uncomment \\iclrfinalcopy for camera-ready"
+  - "Download iclr2025_conference.sty from the official ICLR website"

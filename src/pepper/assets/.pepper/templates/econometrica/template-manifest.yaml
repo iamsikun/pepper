@@ -1,0 +1,33 @@
+venue: Econometrica
+format: single-column
+page_limit: null
+audience: econometrics
+
+style_files:
+  required:
+    - ecta.cls
+  optional:
+    - ecta.bst
+
+sections:
+  required:
+    - abstract.tex
+    - introduction.tex
+    - methodology.tex
+    - conclusion.tex
+  optional:
+    - related_work.tex
+    - background.tex
+    - empirics.tex
+    - appendix_proofs.tex
+    - appendix_experiments.tex
+
+anonymization:
+  review: true
+  camera_ready: false
+
+notes:
+  - "Abstract must be 150 words or fewer"
+  - "JEL classification codes are required"
+  - "Keywords (3-6) are required"
+  - "Download ecta.cls from the Econometric Society website"

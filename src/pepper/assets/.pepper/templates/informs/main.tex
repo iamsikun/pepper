@@ -1,0 +1,109 @@
+% INFORMS Journals Template
+% For: Marketing Science, Management Science, Operations Research
+% Download informs4.cls from: https://pubsonline.informs.org/page/mksc/submission-guidelines
+%
+% Key requirements:
+%   - Double-spaced for submission
+%   - All tables and figures at end (submission) or inline (camera-ready)
+%   - Proofs in appendix
+%   - Abstract max 200 words + 5 keywords
+
+\documentclass[mnsc]{informs4}
+% Options: mnsc (Management Science), mksc (Marketing Science), opre (Operations Research)
+% For final/online version: \documentclass[mnsc,blindrev]{informs4}
+
+% ===== STANDARD PACKAGES =====
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+% ===== THEOREM ENVIRONMENTS =====
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+
+% ===== CUSTOM MACROS =====
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\P}{\mathbb{P}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+
+% ===== DOCUMENT METADATA =====
+\RUNAUTHOR{AuthorOne and AuthorTwo}
+\RUNTITLE{Short Running Title (max 50 chars)}
+\TITLE{Full Paper Title Here}
+\AUTHORS{Author One, Author Two}
+\AFFILIATIONS{%
+  Department, Institution One, City, State/Country \AND
+  Department, Institution Two, City, State/Country
+}
+
+% ========================================================
+\begin{document}
+
+% ===== ABSTRACT =====
+\begin{abstract}
+% Max 200 words. Structure: research question → method → findings → implications
+\input{sections/abstract_body}  % abstract text only, no \begin{abstract}
+\end{abstract}
+
+\KEYWORDS{keyword1; keyword2; keyword3; keyword4; keyword5}
+
+% History block (leave blank for submission, fill in for camera-ready)
+\HISTORY{This article was received on [DATE]; revised on [DATE]; accepted on [DATE].}
+
+% ===== MAIN BODY =====
+\input{sections/introduction}
+
+\input{sections/literature_review}  % separate section for INFORMS journals
+
+\input{sections/model}              % or background.tex
+
+\input{sections/analysis}           % theory/methodology
+
+\input{sections/empirics}           % or experiments
+
+\input{sections/conclusion}
+
+% ===== ACKNOWLEDGMENTS =====
+\section*{Acknowledgments}
+% TODO: Add funding, data access acknowledgments, etc.
+% Note: For blind review, omit or use placeholder
+
+% ===== REFERENCES =====
+\bibliographystyle{informs2014}  % requires informs2014.bst
+\bibliography{references}
+
+% ===== APPENDIX =====
+\appendix
+
+\section{Proofs}
+\label{app:proofs}
+\input{sections/appendix_proofs}
+
+\section{Additional Results}
+\label{app:results}
+\input{sections/appendix_experiments}
+
+\section{Data Description}
+\label{app:data}
+% TODO: Detailed data description if needed
+
+\end{document}
+% ========================================================

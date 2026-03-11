@@ -1,0 +1,30 @@
+venue: NeurIPS
+format: double-column
+page_limit: 8
+audience: ml
+
+style_files:
+  required:
+    - neurips_2025.sty
+  optional: []
+
+sections:
+  required:
+    - abstract.tex
+    - introduction.tex
+    - related_work.tex
+    - methodology.tex
+    - experiments.tex
+    - conclusion.tex
+  optional:
+    - background.tex
+    - appendix_proofs.tex
+    - appendix_experiments.tex
+
+anonymization:
+  review: true
+  camera_ready: false
+
+notes:
+  - "NeurIPS checklist is mandatory for camera-ready submissions"
+  - "Download neurips_2025.sty from the official NeurIPS website"

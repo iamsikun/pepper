@@ -1,0 +1,90 @@
+# Paper Writer System Configuration
+version: "2.0"
+
+# Venue registry
+venues:
+  neurips:
+    name: "NeurIPS"
+    template_dir: neurips
+    format: double-column
+    page_limit: 8
+    audience: ml
+    bibstyle: neurips
+    blind_review: true
+  icml:
+    name: "ICML"
+    template_dir: icml
+    format: double-column
+    page_limit: 8
+    audience: ml
+    bibstyle: icml2025
+    blind_review: true
+  iclr:
+    name: "ICLR"
+    template_dir: iclr
+    format: single-column
+    page_limit: 9
+    audience: ml
+    bibstyle: iclr2025
+    blind_review: true
+  econometrica:
+    name: "Econometrica"
+    template_dir: econometrica
+    format: single-column
+    page_limit: null
+    audience: econometrics
+    bibstyle: ecta
+    blind_review: true
+  marketing-science:
+    name: "Marketing Science"
+    template_dir: informs
+    format: single-column
+    page_limit: 40
+    audience: marketing
+    bibstyle: informs2014
+    blind_review: true
+  management-science:
+    name: "Management Science"
+    template_dir: informs
+    format: single-column
+    page_limit: 40
+    audience: management-science
+    bibstyle: informs2014
+    blind_review: true
+
+# Pipeline stages (ordered)
+stages:
+  - init
+  - literature
+  - outlining
+  - drafting
+  - review
+  - camera-ready
+  - done
+
+# Source map category patterns (used by /new-paper for repo scanning)
+source_categories:
+  documentation:
+    - "docs/"
+    - "notes/"
+    - "writeup/"
+  source_code:
+    - "src/"
+    - "lib/"
+    - "code/"
+  results:
+    - "results/"
+    - "output/"
+    - "experiments/"
+    - "logs/"
+  figures:
+    - "figures/"
+    - "plots/"
+    - "images/"
+    - "viz/"
+  data:
+    - "data/"
+    - "datasets/"
+  scripts:
+    - "scripts/"
+    - "bin/"

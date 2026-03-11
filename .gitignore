@@ -1,24 +1,23 @@
-# Runtime paper workspace (user opts in to version control)
-paper/
 
-# Venue style files (copyright — user downloads)
-.paperwriter/templates/**/*.sty
-.paperwriter/templates/**/*.cls
-.paperwriter/templates/**/*.bst
 
-# LaTeX build artifacts
-*.aux
-*.log
-*.bbl
-*.blg
-*.out
-*.toc
-*.lof
-*.lot
-*.fls
-*.fdb_latexmk
-*.synctex.gz
-*.pdf
+# pepper:start
+paper/**/camera-ready/
+paper/**/submission/
+paper/**/*.aux
+paper/**/*.bbl
+paper/**/*.blg
+paper/**/*.fdb_latexmk
+paper/**/*.fls
+paper/**/*.log
+paper/**/*.out
+paper/**/*.synctex.gz
+# pepper:end
+# packaging and tests
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+__pycache__/
 
 # OS
 .DS_Store

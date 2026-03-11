@@ -2,15 +2,57 @@
 
 ## Goal
 
-Transform this repository into an installable agentic paper-writing scaffold that
-can be dropped into any research project repository and used immediately.
+Transform this repository into a **versioned Python package** that stays in a
+**private GitHub repository** and installs a **project-local agentic
+paper-writing scaffold** into any research repo via `uv`.
 
-The target user experience is:
+The system should feel like a normal per-project tool dependency:
 
-1. Run the install script into a project repo.
-2. Open Claude Code in that repo.
-3. Run `/new-paper` to initialize the paper workspace.
-4. Draft and iterate on a conference paper and, optionally, a journal paper.
+1. Add the private package to a research repo with `uv`.
+2. Run a local CLI to install or sync the scaffold files into that repo.
+3. Open Claude Code in that repo.
+4. Run `/new-paper` and continue the paper workflow locally.
+5. Upgrade the package later with `uv`, then re-sync the scaffold.
+
+## Target User Experience
+
+### Recommended flow: tagged releases
+
+```bash
+# In a project repo, add a pinned version of the private package
+uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.1.0
+
+# Materialize the scaffold into the current repo
+uv run pepper install
+
+# Open Claude Code and initialize the paper workspace
+claude
+/new-paper
+```
+
+Upgrade later:
+
+```bash
+# Move the repo to a newer tagged version
+uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.2.0
+
+# Refresh only package-managed scaffold files
+uv run pepper sync
+```
+
+### Optional flow: rolling branch
+
+```bash
+uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --branch stable
+uv run pepper install
+
+# Later
+uv lock --upgrade-package pepper
+uv run pepper sync
+```
+
+Tagged releases are the default recommendation. They are easier to reason about
+and safer when multiple research repos are active at once.
 
 ## Desired End State
 
@@ -19,581 +61,547 @@ The system should model:
 - one repository = one research project
 - one `paper/` directory = one manuscript family for that project
 - up to two paper targets: `paper/conference/` and `paper/journal/`
-- shared research truth in `paper/shared/`
-- target-specific prose and build artifacts in the target directories
+- one private `pepper` repo = reusable framework source
+- one pinned `pepper` version per project repo via `pyproject.toml` and `uv.lock`
 
 The system should not require:
 
-- `projects/` aliases or symlinks to external repos
-- a central hub repo that points at active projects
-- plural `papers/` directories
-- any project-specific state baked into the scaffold itself
+- symlinks into a central scaffold repo
+- manual copy-paste updates across repos
+- a public PyPI package
+- a central hub repo that tracks active projects
+- project-specific state baked into the package itself
 
 ## Core Design Principles
 
-### 1. Project-local by default
+### 1. Project-local runtime
 
-Every agent treats the current repository root as the active project. There is no
-indirection layer. The repo IS the project.
+All manuscript state and all Claude-facing working files must live inside the
+active research repo. The repo is the project.
 
-### 2. Discoverable project context via source map
+### 2. Package-managed scaffold
 
-Research repos have wildly different structures. Some use `src/`, others `code/`.
-Some put results in `results/`, others in `output/` or `experiments/`. The system
-must not hardcode assumptions about where project materials live.
+The reusable framework is distributed as a Python package. The package ships the
+scaffold assets and a CLI that installs or syncs those assets into a target repo.
 
-Instead, `/new-paper` scans the repo and writes a **source map** into
-`paper/shared/context.md` that tells all downstream agents where to find things in
-THIS specific repo. Agents read the source map rather than guessing paths.
+### 3. Explicit file ownership
 
-The source map records:
+The package manages scaffold files. The user manages manuscript state. Sync logic
+must know which files it owns and must avoid touching runtime paper content.
 
-- paths to documentation (e.g., `docs/model.md`, `notes/theory.md`)
-- paths to experiment results (e.g., `results/`, `output/analysis/`)
-- paths to source code (e.g., `src/`, `lib/`)
-- paths to figures (e.g., `figures/`, `plots/`)
-- paths to data (e.g., `data/`, `datasets/`)
-- any other project-specific locations agents should know about
+### 4. Reproducible upgrades
 
-This is the critical bridge between an arbitrary research repo and the paper-writing
-agents.
+Each project pins a package version. Upgrades happen deliberately through `uv`,
+not by re-running an arbitrary shell script from a mutable checkout.
 
-### 3. One paper program, multiple targets
+### 5. Private by default
 
-This is not a "many papers" system. It is one paper program with one or two
-publication targets. The main abstraction is:
+The package remains in a private GitHub repo for now. Installation and upgrade
+must work cleanly through private Git dependencies.
 
-- shared research inputs and evidence
-- conference manuscript output
-- journal manuscript output
+### 6. Share evidence, not prose
 
-### 4. Share evidence, not prose
+Conference and journal targets share research truth, claims, evidence,
+bibliography, and figure/table plans. They do not share raw section prose.
 
-The conference and journal versions share:
+### 7. Commit manuscript state
 
-- problem framing and claims
-- verified evidence and result references
-- literature notes and bibliography
-- figure and table plans
+`paper/` is core project state, not disposable runtime cache. Drafts, outlines,
+references, reviews, and workflow state should be committed. Only generated build
+artifacts should be gitignored.
 
-They maintain separate target-specific section drafts. Never try to share raw
-section text between targets.
+## What Changes Relative To The Old Plan
 
-### 5. Explicit state, minimal magic
+The old copy-based installer is no longer the primary contract.
 
-Machine-readable YAML files drive the workflow. Pipeline progress is tracked per
-target so agents know what has been done and what remains.
+Replace this:
 
-### 6. Installable scaffold, not a monolith
+- "run `install.sh` from the scaffold repo into a target repo"
 
-This repository is the source template. The install payload is reusable framework
-assets (agents, commands, templates, config). It ships zero project-specific state.
+With this:
 
-## Target Filesystem Layout
+- "add `pepper` to the target repo with `uv`"
+- "run `uv run pepper install`"
+- "upgrade with `uv`, then run `uv run pepper sync`"
 
-### Scaffold files (installed into project repo)
+The package CLI becomes the installer. Any shell scripts that remain are optional
+wrappers only and must not be the main distribution mechanism.
+
+## Package Architecture
+
+The private source repo should become a normal Python package with packaged
+scaffold assets.
+
+### Package repo layout
+
+```text
+pepper-repo/
+├── pyproject.toml
+├── README.md
+├── src/
+│   └── pepper/
+│       ├── __init__.py
+│       ├── cli.py
+│       ├── sync.py
+│       ├── validate.py
+│       ├── manifest.py
+│       └── assets/
+│           ├── .claude/
+│           │   ├── agents/
+│           │   ├── commands/
+│           │   └── settings.json
+│           ├── .pepper/
+│           │   ├── config.yaml
+│           │   └── templates/
+│           └── CLAUDE.template.md
+└── tests/
+```
+
+### Packaging rules
+
+- Scaffold assets are shipped as package data under `src/pepper/assets/`
+- CLI reads assets with `importlib.resources`
+- The package exposes a console script named `pepper`
+- The package version in `pyproject.toml` is the scaffold version installed into
+  each project repo
+
+## Installed Files In A Project Repo
+
+After `uv run pepper install`, a target repo should look like this:
 
 ```text
 project-root/
 ├── .claude/
-│   ├── agents/                  ← 9 specialized subagent prompts
-│   ├── commands/                ← slash command prompts
-│   └── settings.json            ← tool permissions
-├── .paperwriter/
-│   ├── config.yaml              ← system defaults (venue registry, etc.)
-│   ├── templates/               ← venue-specific LaTeX templates
-│   │   ├── neurips/
-│   │   ├── icml/
-│   │   ├── iclr/
-│   │   ├── econometrica/
-│   │   └── informs/
-│   └── scripts/
-│       └── install.sh           ← installer script
-└── CLAUDE.md                    ← system instructions for Claude Code
-```
-
-### Runtime files (created by `/new-paper` and subsequent commands)
-
-```text
-project-root/
+│   ├── agents/
+│   ├── commands/
+│   └── settings.json
+├── .pepper/
+│   ├── config.yaml
+│   ├── templates/
+│   └── install-manifest.json
+├── CLAUDE.md
 └── paper/
-    ├── state.yaml               ← global state: active target, per-target stages
+    ├── state.yaml
     ├── shared/
-    │   ├── context.md           ← title, topic, contributions, source map
-    │   ├── claims.md            ← research claims and evidence links
-    │   ├── literature/          ← survey markdown files per topic
-    │   ├── references-master.bib
-    │   ├── figure-plan.md       ← planned figures with descriptions
-    │   ├── table-plan.md        ← planned tables with descriptions
-    │   └── evidence/            ← verified results, numbers, quotes
     ├── conference/
-    │   ├── target.yaml          ← venue, template, mode, page limit, audience
-    │   ├── outline.md           ← section-level outline for this target
-    │   ├── sections/            ← .tex drafts
-    │   ├── figures/             ← target-specific figure files
-    │   ├── references.bib       ← subset of master bib for this target
-    │   ├── main.tex             ← assembled paper
-    │   ├── review.md            ← peer review output
-    │   ├── revision-plan.md     ← actionable revision steps
-    │   └── camera-ready/        ← submission package
-    └── journal/                 ← (optional, same structure as conference/)
-        ├── target.yaml
-        ├── outline.md
-        ├── sections/
-        ├── figures/
-        ├── references.bib
-        ├── main.tex
-        ├── review.md
-        ├── revision-plan.md
-        └── submission/
+    └── journal/
 ```
 
-Notes:
+### File ownership
 
-- `paper/journal/` is optional. Only created when needed.
-- `paper/conference/` is optional if the first target is journal-only.
-- `.paperwriter/` stores reusable system assets, not manuscript content.
-- `paper/` stores all manuscript state and is gitignored by default (user opts in
-  to version control).
+Package-managed files:
 
-## State Model
+- `.claude/**`
+- `.pepper/config.yaml`
+- `.pepper/templates/**`
+- `.pepper/install-manifest.json`
+- the package-managed block inside `CLAUDE.md`
 
-### Global state: `paper/state.yaml`
+User-managed runtime files:
 
-```yaml
-active_target: conference
-initialized: true
-targets:
-  conference:
-    stage: drafting        # init | literature | outlining | drafting | review | camera-ready | done
-    created: 2027-01-15
-  journal:
-    stage: init
-    created: 2027-03-01
-```
+- `paper/**`
+- user-authored content in `CLAUDE.md` outside the managed block
+- the repo's normal code, docs, data, experiment outputs, and figures
 
-The `stage` field per target lets agents know what has been completed and what is
-expected next. Commands use this to enforce prerequisites (e.g., `/draft-paper`
-requires `stage >= outlining`).
+## Claude Integration Contract
 
-### Shared context: `paper/shared/context.md`
+Claude Code expects commands and agent prompts to exist locally in the current
+repo. The package therefore must **materialize real files** into the target repo;
+it must not rely on symlinks or remote references.
 
-This is the central bridge between the research repo and the paper agents. It
-contains:
-
-```markdown
-# Paper Context
-
-## Title
-[Working title]
-
-## Topic
-[2-3 sentence description of the research]
-
-## Contributions
-1. [Contribution 1]
-2. [Contribution 2]
-3. [Contribution 3]
-
-## Paper Type
-[Methodology | Theory | Empirical | Theory+Experiments]
-
-## Source Map
-
-The following paths in this repository contain materials relevant to the paper.
-Agents should read from these locations when they need project context.
-
-- Documentation: `docs/model.md`, `docs/theory.md`, `docs/experiments.md`
-- Source code: `src/myproject/`
-- Experiment results: `results/`
-- Figures: `figures/`
-- Data: `data/raw/`, `data/processed/`
-- Scripts: `scripts/train.py`, `scripts/evaluate.py`
-
-## Key Files
-[Optional: annotated list of the most important files agents should read]
-
-- `docs/model.md` — mathematical formulation of the model
-- `results/main_results.csv` — primary experimental results
-- `docs/theory.md` — proofs and theoretical analysis
-```
-
-### Target metadata: `paper/<target>/target.yaml`
-
-```yaml
-name: conference
-venue: NeurIPS 2027
-template: neurips
-mode: blind             # blind | camera-ready | submission
-page_limit: 8
-audience: ml            # ml | econometrics | marketing | management-science | operations
-```
-
-## Command Model
-
-### Required commands
+The Claude-facing commands remain the same:
 
 - `/new-paper`
-  - Scans repo structure (not hardcoded paths — actually walks the directory tree)
-  - Asks user for title, topic, contributions, venue, paper type
-  - Writes `paper/shared/context.md` with the source map
-  - Creates the first target directory with `target.yaml`
-  - Sets `paper/state.yaml`
-
-- `/set-target [conference|journal]`
-  - Switches the active target
-  - Updates `paper/state.yaml`
-
+- `/set-target`
 - `/literature-search`
-  - Reads topic from `paper/shared/context.md`
-  - Spawns parallel `literature-reviewer` agents
-  - Writes to `paper/shared/literature/`
-  - Appends to `paper/shared/references-master.bib`
-  - Advances target stage to `literature`
-
 - `/draft-paper`
-  - Reads active target from `paper/state.yaml`
-  - Prerequisite: outline exists for active target
-  - Spawns parallel section writers (intro, technical, empirics)
-  - Runs citation-manager, then latex-assembler
-  - Writes to `paper/<active_target>/sections/` and `paper/<active_target>/main.tex`
-  - Advances target stage to `drafting`
-
-- `/camera-ready`
-  - Formats only the active target
-  - Runs final citation check, venue-formatter, compilation
-  - Writes to `paper/<active_target>/camera-ready/`
-  - Advances target stage to `camera-ready`
-
-### Additional commands
-
-- `/create-journal-version`
-  - Bootstraps `paper/journal/` from `paper/shared/`
-  - Optionally uses conference outline as input, but writes fresh journal sections
-  - Adds `journal` entry to `paper/state.yaml`
-
 - `/review-paper`
-  - Runs peer-reviewer on the active target
-  - Writes `paper/<active_target>/review.md` and `paper/<active_target>/revision-plan.md`
+- `/camera-ready`
+- `/create-journal-version`
 
-## Agent Input and Output Contract
+The `pepper` CLI does not replace those commands. It installs and updates the
+files that define those commands.
 
-All agents first resolve the active target from `paper/state.yaml`.
+## Runtime Manuscript Model
 
-Then:
+The project-local manuscript model from the earlier plan still applies.
 
-- shared inputs come from `paper/shared/` plus paths listed in the source map
-- target-specific inputs come from `paper/<active_target>/`
-- target-specific outputs go only to `paper/<active_target>/`
+### Runtime layout
 
-### Source map resolution
+```text
+paper/
+├── state.yaml
+├── shared/
+│   ├── context.md
+│   ├── claims.md
+│   ├── literature/
+│   ├── references-master.bib
+│   ├── figure-plan.md
+│   ├── table-plan.md
+│   └── evidence/
+├── conference/
+│   ├── target.yaml
+│   ├── outline.md
+│   ├── sections/
+│   ├── figures/
+│   ├── references.bib
+│   ├── main.tex
+│   ├── review.md
+│   ├── revision-plan.md
+│   └── camera-ready/
+└── journal/
+    ├── target.yaml
+    ├── outline.md
+    ├── sections/
+    ├── figures/
+    ├── references.bib
+    ├── main.tex
+    ├── review.md
+    ├── revision-plan.md
+    └── submission/
+```
 
-When an agent needs project context (experiment results, model docs, etc.), it
-reads the source map from `paper/shared/context.md` and follows the paths listed
-there. Agents must NOT hardcode paths like `docs/model.md` or `results/`. If the
-source map does not list a relevant path, the agent should note the gap and
-proceed with available information.
+### Source map contract
 
-### Shared paper materials agents may read
+`/new-paper` scans the current repo and writes a source map into
+`paper/shared/context.md`. Agents read the source map rather than hardcoding
+paths like `src/`, `docs/`, or `results/`.
 
+The source map is still the bridge between an arbitrary research repo and the
+paper-writing agents.
+
+## CLI Contract
+
+The initial package CLI should expose these commands:
+
+### `pepper install`
+
+Purpose:
+
+- install scaffold files into the current repo
+- create `.pepper/install-manifest.json`
+- initialize managed blocks in `CLAUDE.md`
+- add recommended ignore rules for generated paper build artifacts
+
+Behavior:
+
+- safe to run in a fresh repo
+- safe to re-run if the scaffold is already installed
+- must not create or modify `paper/` content except where explicitly requested by
+  Claude slash commands later
+
+### `pepper sync`
+
+Purpose:
+
+- update scaffold files in the current repo from the currently installed package
+  version
+
+Behavior:
+
+- overwrite unchanged managed files
+- update the managed block in `CLAUDE.md`
+- leave all `paper/` content untouched
+- detect local edits to managed scaffold files and refuse to overwrite them by
+  default
+- support a `--force` flag to overwrite managed-file conflicts when the user
+  explicitly wants that behavior
+
+### `pepper validate`
+
+Purpose:
+
+- validate scaffold integrity and runtime paper structure
+
+Checks:
+
+- path lint for banned legacy path references
+- template manifest presence
+- state validation if `paper/` exists
+- target directory validation
+- section lint for unresolved LaTeX markers or `TODO`s in camera-ready stage
+
+### `pepper version`
+
+Purpose:
+
+- print the package version
+- print the installed scaffold version recorded in
+  `.pepper/install-manifest.json`
+- report whether the current repo is in sync with the package version
+
+## Sync Engine Contract
+
+The sync implementation is the core of this design.
+
+### Manifest
+
+`install-manifest.json` should record:
+
+- installed scaffold version
+- the list of package-managed files
+- content hashes for those files
+- the last sync timestamp
+
+### Default sync behavior
+
+For each managed file:
+
+- if the file does not exist locally, create it
+- if the file matches the last installed hash, replace it with the new package version
+- if the file differs from the manifest hash, treat it as a local modification and
+  report a conflict
+
+### `CLAUDE.md` handling
+
+`CLAUDE.md` should be managed only inside explicit markers, for example:
+
+```md
+<!-- pepper:start -->
+[package-managed instructions]
+<!-- pepper:end -->
+```
+
+Anything outside those markers is user-owned and must be preserved across syncs.
+
+### `.gitignore` handling
+
+The installer should manage a small, marked block in `.gitignore` for generated
+paper build outputs only. It should not add `paper/` itself to `.gitignore`.
+
+Recommended ignore entries:
+
+- `paper/**/camera-ready/`
+- `paper/**/submission/`
+- `paper/**/*.aux`
+- `paper/**/*.bbl`
+- `paper/**/*.blg`
+- `paper/**/*.fdb_latexmk`
+- `paper/**/*.fls`
+- `paper/**/*.log`
+- `paper/**/*.out`
+- `paper/**/*.synctex.gz`
+
+## Versioning And Release Model
+
+### Source of truth
+
+The private `pepper` repo is the source of truth for scaffold code and assets.
+
+### Versioning
+
+- use semantic-ish version tags such as `v0.1.0`, `v0.2.0`
+- the package version and the Git tag should match
+- each project repo pins either a tag or a branch in `pyproject.toml` and
+  `uv.lock`
+
+### Recommendation
+
+- use tags for normal research repos
+- use a `stable` branch only when you intentionally want rolling updates
+
+### Authentication
+
+Private Git installation should work through:
+
+- SSH keys with `git+ssh://git@github.com/...`
+- or Git credential helper-backed HTTPS if needed
+
+The plan should assume SSH is the default path for local development.
+
+## Template Distribution
+
+Template manifests and package-owned template skeletons should be distributed as
+package assets.
+
+If venue `.sty` or `.cls` files cannot be redistributed, the package should ship:
+
+- the template directory structure
+- `template-manifest.yaml`
+- clear placeholder instructions for which upstream files the user must download
+
+## Prompt And Path Contract
+
+All command and agent prompts must follow the project-local path model:
+
+- no `projects/`
+- no `papers/`
+- no `workspace/`
+- no `current-paper.md`
+- no legacy `literature/` path assumptions
+
+Project context must come from:
+
+- `paper/state.yaml`
 - `paper/shared/context.md`
-- `paper/shared/claims.md`
-- `paper/shared/literature/`
-- `paper/shared/references-master.bib`
-- `paper/shared/figure-plan.md`
-- `paper/shared/table-plan.md`
-- `paper/shared/evidence/`
+- `paper/<target>/target.yaml`
+- source map entries listed in `paper/shared/context.md`
 
-### Target-specific materials agents may read and write
+## Git Policy For `paper/`
 
+Commit:
+
+- `paper/state.yaml`
+- `paper/shared/**`
 - `paper/<target>/target.yaml`
 - `paper/<target>/outline.md`
-- `paper/<target>/sections/`
-- `paper/<target>/figures/`
+- `paper/<target>/sections/**`
+- `paper/<target>/figures/**`
 - `paper/<target>/references.bib`
 - `paper/<target>/main.tex`
 - `paper/<target>/review.md`
 - `paper/<target>/revision-plan.md`
 
-## Refactor Phases
+Ignore:
 
-## Phase 1: Clean slate — remove legacy structure
+- generated submission bundles
+- LaTeX intermediate files
+- any local scratch files explicitly created as temporary working output
+
+## Implementation Phases
+
+## Phase 1: Package skeleton
 
 ### Objective
 
-Remove all project-specific state and legacy architecture from the repo so it
-becomes a clean scaffold.
+Turn this repo into a Python package with a CLI entry point.
 
 ### Tasks
 
-- Delete `projects/` (done)
-- Delete `papers/` and all paper-specific content
-- Delete `literature/` (will be recreated per-project under `paper/shared/`)
-- Remove any hardcoded active-paper references
+- add `pyproject.toml`
+- create `src/pepper/`
+- add console entry point for `pepper`
+- add package data configuration for scaffold assets
+- add minimal tests for package import and CLI entry point
 
 ### Exit criteria
 
-- Repo contains only framework assets (agents, commands, templates, config, docs).
-- Zero project-specific state.
+- `uv run pepper version` works in this repo
+- package assets are readable via `importlib.resources`
 
-## Phase 2: Define and document the new contract
+## Phase 2: Install and sync engine
 
 ### Objective
 
-Rewrite all user-facing documentation around the project-local model.
+Implement deterministic scaffold installation and upgrades.
 
 ### Tasks
 
-- Rewrite `CLAUDE.md`:
-  - Remove `projects/` and `papers/` assumptions
-  - Remove hardcoded active-paper tables
-  - Document `paper/shared/`, `paper/<target>/`, source map concept
-  - Document target switching and pipeline stages
-  - Keep writing style guidelines and venue requirements (these are universal)
-- Rewrite `README.md`:
-  - Installation instructions
-  - Quick start: install → `/new-paper` → `/literature-search` → `/draft-paper` → `/camera-ready`
-  - Architecture overview
-  - Venue support matrix
+- implement repo-root detection
+- implement asset enumeration
+- implement manifest read/write
+- implement file hashing
+- implement managed-file install
+- implement conflict detection for locally modified managed files
+- implement `CLAUDE.md` marker updates
+- implement `.gitignore` marker updates
 
 ### Exit criteria
 
-- A new user can understand and use the system from the README alone.
+- `pepper install` works in a clean test repo
+- `pepper sync` updates managed files without touching `paper/`
+- local modifications to managed files are detected correctly
 
-## Phase 3: Update all prompts to the new path model
+## Phase 3: Migrate scaffold assets into the package
 
 ### Objective
 
-Update every command and agent to use the new filesystem contract.
+Make packaged assets the only source for Claude commands, agents, config, and templates.
 
-### Sub-phase 3a: Commands first
+### Tasks
 
-Update the 4 entry-point commands. These define the contract that agents must
-follow.
+- move `.claude/` into `src/pepper/assets/.claude/`
+- move reusable `.pepper/` assets into `src/pepper/assets/.pepper/`
+- convert `CLAUDE.md` into a template or managed block source
+- remove copy-installer-first assumptions from docs and code
 
-- `.claude/commands/new-paper.md` — scan repo, write source map, create target
-- `.claude/commands/literature-search.md` — write to `paper/shared/literature/`
-- `.claude/commands/draft-paper.md` — read state, write to `paper/<target>/`
-- `.claude/commands/camera-ready.md` — format active target
+### Exit criteria
 
-### Sub-phase 3b: Agents
+- installing from the package materializes all required scaffold files
+- no core workflow depends on a checked-out scaffold repo
 
-Update all 9 agents to read the source map and use the new paths.
+## Phase 4: Prompt migration to the project-local model
 
-- `.claude/agents/literature-reviewer.md`
-- `.claude/agents/paper-outliner.md`
-- `.claude/agents/intro-writer.md`
-- `.claude/agents/technical-writer.md`
-- `.claude/agents/empirics-writer.md`
-- `.claude/agents/citation-manager.md`
-- `.claude/agents/latex-assembler.md`
-- `.claude/agents/venue-formatter.md`
-- `.claude/agents/peer-reviewer.md`
+### Objective
 
-### Specific contract changes
+Update every command and agent prompt to the new path contract.
 
-- Replace all `projects/<slug>/...` with source map paths
-- Replace all `papers/<slug>/...` with `paper/<target>/...`
-- Replace `workspace/` references with `paper/<target>/...`
-- Replace `literature/` with `paper/shared/literature/`
-- Replace `current-paper.md` with `paper/state.yaml` + `paper/shared/context.md` +
-  `paper/<target>/target.yaml`
+### Tasks
 
-### Path lint (run immediately after each file is updated)
+- update `/new-paper`
+- update `/literature-search`
+- update `/draft-paper`
+- update `/camera-ready`
+- update all agents to read from the source map and `paper/<target>/...`
+- run path lint after each prompt update
 
-After updating each prompt file, grep it for banned patterns:
+### Path lint
+
+Fail the phase if any prompt file still references:
 
 - `projects/`
 - `papers/`
 - `workspace/`
 - `current-paper.md`
-- `literature/references` (should be `paper/shared/references-master.bib`)
-
-Fail the phase if any banned pattern remains.
+- legacy literature paths
 
 ### Exit criteria
 
-- No command or agent prompt references any legacy path.
-- Path lint passes on all prompt files.
+- no prompt references legacy paths
+- all prompts follow the source-map-based project-local contract
 
-## Phase 4: Make templates target-aware
+## Phase 5: Validation and tests
 
 ### Objective
 
-Align LaTeX templates with the new layout.
+Catch regressions in packaging, sync, and prompt contracts.
 
 ### Tasks
 
-- Move `templates/` to `.paperwriter/templates/`
-- Ensure templates reference `paper/<target>/sections/` for `\input{}` paths
-- Normalize expected section filenames across all venues:
-  - `abstract.tex`, `introduction.tex`, `related_work.tex`, `methodology.tex`,
-    `experiments.tex` (or `empirics.tex`), `conclusion.tex`, `appendix.tex`
-- Add a `template-manifest.yaml` in each template directory listing:
-  - required section files
-  - optional section files
-  - style file dependencies (that users must download)
-
-### Key rule
-
-Target prose is stored in the target directory. Templates must not assume shared
-section files.
+- implement `pepper validate`
+- add tests for install on a fresh repo
+- add tests for sync on an upgraded package version
+- add tests for `CLAUDE.md` preservation outside managed markers
+- add tests for manifest conflict detection
+- add tests for path lint
 
 ### Exit criteria
 
-- Templates render correctly from `paper/<target>/sections/`.
-- Each template has a manifest documenting its requirements.
+- validation passes on a clean installed scaffold
+- validation catches at least one known regression in prompts or runtime state
 
-## Phase 5: Add installation flow
+## Phase 6: Private-repo release workflow
 
 ### Objective
 
-Provide a concrete, copy-based installer.
+Make the package practical to use across multiple private research repos.
 
-### Install script: `.paperwriter/scripts/install.sh`
+### Tasks
 
-```bash
-#!/usr/bin/env bash
-# Usage: /path/to/paper-writer/.paperwriter/scripts/install.sh [target-repo]
-#
-# Copies the paper-writing scaffold into the target repo.
-# Safe to re-run: updates framework files, does not touch paper/ runtime state.
-
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SOURCE_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-TARGET_ROOT="${1:-.}"
-
-# Copy framework assets
-cp -R "$SOURCE_ROOT/.claude" "$TARGET_ROOT/.claude"
-cp -R "$SOURCE_ROOT/.paperwriter" "$TARGET_ROOT/.paperwriter"
-cp "$SOURCE_ROOT/CLAUDE.md" "$TARGET_ROOT/CLAUDE.md"
-
-# Add paper/ to .gitignore if not already there
-if ! grep -q '^paper/' "$TARGET_ROOT/.gitignore" 2>/dev/null; then
-  echo 'paper/' >> "$TARGET_ROOT/.gitignore"
-fi
-
-echo "Paper-writing scaffold installed into $TARGET_ROOT"
-echo "Run /new-paper in Claude Code to initialize your paper workspace."
-```
-
-### Requirements
-
-- Installation copies only framework files, never runtime state
-- Re-running the installer updates framework files without touching `paper/`
-- No symlinks
-- Works on macOS and Linux
+- document the private Git `uv add --dev` workflow
+- document tagged release workflow
+- document branch-based workflow as optional
+- document SSH authentication expectations
+- test install and upgrade from a separate sample repo
 
 ### Exit criteria
 
-- Installer can be run on a fresh repo and `/new-paper` works afterward.
-
-## Phase 6: Add validation
-
-### Objective
-
-Catch regressions early.
-
-### Validation script: `.paperwriter/scripts/validate.sh`
-
-Checks:
-
-1. **Path lint**: No prompt file references banned legacy paths
-2. **Template lint**: Every template directory has a manifest
-3. **State lint** (if `paper/` exists):
-   - `paper/state.yaml` exists and is valid YAML
-   - Active target directory exists
-   - Active target has `target.yaml`
-4. **Section lint** (if sections exist):
-   - No unresolved `\ref{??}` or `\cite{??}`
-   - No `TODO` markers in camera-ready stage
-
-### Exit criteria
-
-- `validate.sh` passes on a clean scaffold install.
-- `validate.sh` catches at least one known regression pattern.
-
-## Concrete File-by-File Change List
-
-### Must change
-
-- `README.md` — rewrite for install-based workflow
-- `CLAUDE.md` — rewrite for project-local contract
-- `.claude/commands/new-paper.md` — scan repo, write source map
-- `.claude/commands/literature-search.md` — `paper/shared/literature/`
-- `.claude/commands/draft-paper.md` — target-aware drafting
-- `.claude/commands/camera-ready.md` — target-aware formatting
-- `.claude/agents/*.md` — all 9 agents updated to new paths
-- `.claude/settings.json` — review permissions
-
-### Must add
-
-- `.paperwriter/config.yaml` — venue registry and defaults
-- `.paperwriter/templates/` — moved from `templates/`
-- `.paperwriter/scripts/install.sh`
-- `.paperwriter/scripts/validate.sh`
-
-### Must remove
-
-- `projects/` — done
-- `papers/` — all project-specific paper content
-- `literature/` — will be recreated per-project under `paper/shared/`
-- `templates/` — moved to `.paperwriter/templates/`
+- a separate private project repo can install from a tag
+- that repo can upgrade to a newer tag and run `pepper sync`
 
 ## Acceptance Criteria
 
 The implementation is complete when:
 
-1. The repo contains zero project-specific state.
-2. `install.sh` copies the scaffold into a fresh repo without errors.
-3. `/new-paper` scans the target repo and produces a valid source map.
-4. `/literature-search` writes to `paper/shared/literature/`.
-5. `/draft-paper` writes sections to `paper/<target>/sections/` and assembles
-   `main.tex`.
-6. `/camera-ready` produces a submission package in
-   `paper/<target>/camera-ready/`.
-7. All agents read project context from the source map, not hardcoded paths.
-8. Conference and journal targets are fully isolated from each other.
-9. `validate.sh` passes on both a clean scaffold and an initialized project.
-
-## Execution Order
-
-1. Clean slate: remove legacy structure.
-2. Rewrite docs (`CLAUDE.md`, `README.md`).
-3. Update commands (3a), then agents (3b), with path lint after each file.
-4. Move and normalize templates.
-5. Write installer script.
-6. Write validation script.
-
-## Risks and Mitigations
-
-### Risk: agents can't find project materials in unfamiliar repos
-
-Mitigation: the source map in `paper/shared/context.md` is written during
-`/new-paper` by actually scanning the repo. If `/new-paper` does its job, every
-downstream agent has correct paths. If a path is missing from the source map, agents
-note the gap rather than guessing.
-
-### Risk: prompt drift during refactor
-
-Mitigation: path lint runs after every prompt file change. Banned patterns
-(`projects/`, `papers/`, `workspace/`, `current-paper.md`) are checked
-automatically.
-
-### Risk: over-sharing text between conference and journal versions
-
-Mitigation: share evidence and plans, not section prose. Each target has its own
-`sections/` directory.
-
-### Risk: installer becomes too clever
-
-Mitigation: the installer is a plain `cp -R` script. No package managers, no
-dependency resolution, no version negotiation. Users can read and modify every file
-it copies.
-
-### Risk: source map goes stale as repo evolves
-
-Mitigation: `/sync-evidence` command re-scans the repo and updates the source map.
-Agents should also flag when a source map path doesn't exist.
+1. This repo is a working Python package with a `pepper` CLI.
+2. A separate project repo can install the private package with `uv add --dev`.
+3. `uv run pepper install` materializes the scaffold into a clean project repo.
+4. `uv run pepper sync` updates only package-managed scaffold files.
+5. `paper/` runtime content is never modified by install or sync.
+6. `CLAUDE.md` content outside managed markers is preserved across syncs.
+7. Local modifications to managed scaffold files are detected and reported.
+8. All prompts follow the project-local path contract and use the source map.
+9. The recommended gitignore block ignores build artifacts, not the whole `paper/`
+   tree.
+10. A project pinned to `v0.1.0` can be upgraded to `v0.2.0` via `uv`, then
+    re-synced successfully.

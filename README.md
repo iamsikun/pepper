@@ -10,14 +10,19 @@ Targets: NeurIPS · ICML · ICLR · Econometrica · Marketing Science · Managem
 ## Installation
 
 ```bash
-# From this repository, install into your project repo:
-.paperwriter/scripts/install.sh /path/to/your/project
+# Add the private package to a project repo
+uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.1.0
 
-# Or install into the current directory:
-.paperwriter/scripts/install.sh .
+# Materialize the scaffold into that repo
+uv run pepper install
 ```
 
-This copies `.claude/`, `.paperwriter/`, and `CLAUDE.md` into your project. No symlinks, no package managers.
+Upgrade later:
+
+```bash
+uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.2.0
+uv run pepper sync
+```
 
 ---
 
@@ -120,7 +125,7 @@ claude
 | Marketing Science | `informs4.cls` | Yes |
 | Management Science | `informs4.cls` | Yes |
 
-> **Note:** Download official `.sty`/`.cls` files from each venue's website and place them in `.paperwriter/templates/<venue>/`. These files cannot be distributed due to copyright.
+> **Note:** Download official `.sty`/`.cls` files from each venue's website and place them in `.pepper/templates/<venue>/`. These files cannot be distributed due to copyright.
 
 ---
 
@@ -134,7 +139,7 @@ your-project/
 │   ├── agents/                  ← 9 specialized subagent prompts
 │   ├── commands/                ← slash command prompts
 │   └── settings.json            ← tool permissions
-├── .paperwriter/
+├── .pepper/
 │   ├── config.yaml              ← system defaults (venue registry, stages)
 │   ├── templates/               ← venue-specific LaTeX templates
 │   │   ├── neurips/
@@ -208,10 +213,10 @@ One project can have up to two publication targets: conference and journal. They
 
 - Claude Code installed and running
 - LaTeX distribution (TeX Live or MiKTeX) for compilation
-- Venue style files downloaded (see `.paperwriter/templates/` for which files are needed)
+- Venue style files downloaded (see `.pepper/templates/` for which files are needed)
 
 ---
 
 ## Version
 
-System v2.0 — Project-local installable scaffold.
+System v3.0 — Project-local `uv`-managed package scaffold.

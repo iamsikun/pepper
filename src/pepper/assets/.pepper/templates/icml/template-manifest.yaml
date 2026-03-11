@@ -1,0 +1,30 @@
+venue: ICML
+format: double-column
+page_limit: 8
+audience: ml
+
+style_files:
+  required:
+    - icml2025.sty
+  optional: []
+
+sections:
+  required:
+    - abstract.tex
+    - introduction.tex
+    - related_work.tex
+    - methodology.tex
+    - experiments.tex
+    - conclusion.tex
+  optional:
+    - background.tex
+    - appendix_proofs.tex
+    - appendix_experiments.tex
+
+anonymization:
+  review: true
+  camera_ready: false
+
+notes:
+  - "Impact statement (1 page) is required for camera-ready"
+  - "Download icml2025.sty from the official ICML website"

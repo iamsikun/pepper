@@ -1,6 +1,3 @@
-
-
-<!-- pepper:start -->
 # Academic Paper Writing System
 
 ## Researcher Profile
@@ -174,4 +171,3 @@ Users must download official `.sty`/`.cls` files from venue websites and place t
 Each target progresses through: `init` → `literature` → `outlining` → `drafting` → `review` → `camera-ready` → `done`
 
 Commands enforce prerequisites based on the current stage.
-<!-- pepper:end -->

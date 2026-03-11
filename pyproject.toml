@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pepper"
+version = "0.1.0"
+description = "Project-local academic paper writing scaffold for Claude Code"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [
+  { name = "pepper" },
+]
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pepper"]
+
+[tool.hatch.build.targets.wheel.shared-scripts]
+"scripts/pepper" = "pepper"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src/pepper",
+  "/scripts/pepper",
+  "/tests",
+  "/README.md",
+  "/CLAUDE.md",
+  "/docs/project-local-agentic-writer-plan.md",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
