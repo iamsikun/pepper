@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from .manifest import InstallManifest
@@ -16,6 +17,11 @@ def _print_conflicts(conflicts: list[str]) -> None:
 
 def _cmd_install(args: argparse.Namespace) -> int:
     repo_root = find_repo_root(Path.cwd())
+    manifest_path = repo_root / MANIFEST_PATH
+    if manifest_path.exists() and not args.force:
+        print("pepper scaffold is already installed in this repo.")
+        print("use 'pepper sync' to update, or 'pepper install --force' to reinstall.")
+        return 1
     result = install_or_sync(repo_root, force=args.force, write_manifest=True)
     if result.conflicts:
         _print_conflicts(result.conflicts)
@@ -27,6 +33,11 @@ def _cmd_install(args: argparse.Namespace) -> int:
 
 def _cmd_sync(args: argparse.Namespace) -> int:
     repo_root = find_repo_root(Path.cwd())
+    manifest_path = repo_root / MANIFEST_PATH
+    if not manifest_path.exists():
+        print("pepper scaffold is not installed in this repo.")
+        print("run 'pepper install' first.")
+        return 1
     result = install_or_sync(repo_root, force=args.force, write_manifest=True)
     if result.conflicts:
         _print_conflicts(result.conflicts)
@@ -97,7 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
-    return args.func(args)
+    sys.exit(args.func(args))

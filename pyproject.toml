@@ -14,6 +14,9 @@ authors = [
 ]
 dependencies = []
 
+[project.scripts]
+pepper = "pepper.cli:main"
+
 [dependency-groups]
 dev = [
   "pytest>=8.4.0",
@@ -22,13 +25,9 @@ dev = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/pepper"]
 
-[tool.hatch.build.targets.wheel.shared-scripts]
-"scripts/pepper" = "pepper"
-
 [tool.hatch.build.targets.sdist]
 include = [
   "/src/pepper",
-  "/scripts/pepper",
   "/tests",
   "/README.md",
   "/CLAUDE.md",
