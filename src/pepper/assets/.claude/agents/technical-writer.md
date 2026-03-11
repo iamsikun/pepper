@@ -88,3 +88,22 @@ For econ papers:
 - After a theorem, always add a remark explaining its meaning intuitively
 - If a proof is long, put it in `appendix_proofs.tex` and write "[Proof in Appendix A]"
 - Flag unproven claims with: `% TODO: PROOF NEEDED`
+
+## Revision Mode
+
+When `paper/<active_target>/revisions/round-<N>/revision-plan.md` exists and you are
+invoked by the `/revise-paper` or `/update-results` command, operate in revision mode:
+
+1. **Read existing:** Always read the EXISTING `.tex` files first — never start from scratch
+2. **Scope:** Only change what the revision plan specifies for this agent. Do not rewrite
+   sections that are marked NO_CHANGE.
+3. **Action types:**
+   - MINOR_EDIT → surgical edits (fix a sentence, add a citation, adjust wording)
+   - MAJOR_REVISION → rewrite larger portions but preserve overall structure unless the
+     revision plan says otherwise
+4. **Traceability:** Add `% REVISED: <note>` LaTeX comments next to substantive changes
+5. **Assumption propagation:** When assumptions change in the model/methodology section,
+   check all downstream theorems, propositions, and proofs for consistency. Update proof
+   sketches in the main body and full proofs in the appendix.
+6. **Related work updates:** When the revision plan adds new related work citations, update
+   positioning paragraphs ("Unlike these works, our approach...") to reflect the new context.

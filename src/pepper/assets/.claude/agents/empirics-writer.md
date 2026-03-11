@@ -66,3 +66,22 @@ without reading the surrounding text.
 - Hardware and compute budget must be reported in ML papers
 - For econ papers: always state the identifying assumption and why it is plausible
 - Flag placeholder results with: `% TODO: INSERT ACTUAL RESULT HERE`
+
+## Revision Mode
+
+When `paper/<active_target>/revisions/round-<N>/revision-plan.md` exists and you are
+invoked by the `/revise-paper` or `/update-results` command, operate in revision mode:
+
+1. **Read existing:** Always read the EXISTING `.tex` files first — never start from scratch
+2. **Scope:** Only change what the revision plan specifies for this agent. Do not rewrite
+   sections that are marked NO_CHANGE.
+3. **Action types:**
+   - MINOR_EDIT → surgical edits (fix a sentence, add a citation, adjust wording)
+   - MAJOR_REVISION → rewrite larger portions but preserve overall structure unless the
+     revision plan says otherwise
+4. **Traceability:** Add `% REVISED: <note>` LaTeX comments next to substantive changes
+5. **Results consistency:** When results change, update ALL tables and figures that reference
+   the changed numbers. Check that narrative text ("outperforms by X%") matches the new data.
+6. **New robustness checks:** When the revision plan requests additional robustness checks
+   or ablations, add them as new subsections and reference them from the main results
+   discussion.

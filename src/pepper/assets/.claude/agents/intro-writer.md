@@ -75,3 +75,20 @@ The introduction must accomplish these jobs in order:
 - Every citation must exist in `paper/shared/references-master.bib`
 - Flag any claim that requires a theorem or experiment with `% TODO: verify`
 - Do not reveal the experimental numbers in the introduction — build suspense
+
+## Revision Mode
+
+When `paper/<active_target>/revisions/round-<N>/revision-plan.md` exists and you are
+invoked by the `/revise-paper` or `/update-results` command, operate in revision mode:
+
+1. **Read existing:** Always read the EXISTING `.tex` files first — never start from scratch
+2. **Scope:** Only change what the revision plan specifies for this agent. Do not rewrite
+   sections that are marked NO_CHANGE.
+3. **Action types:**
+   - MINOR_EDIT → surgical edits (fix a sentence, add a citation, adjust wording)
+   - MAJOR_REVISION → rewrite larger portions but preserve overall structure unless the
+     revision plan says otherwise
+4. **Traceability:** Add `% REVISED: <note>` LaTeX comments next to substantive changes
+5. **Abstract updates:** When contributions or results have changed significantly (per the
+   revision plan), update the abstract to reflect the new framing. Keep the abstract
+   consistent with the revised introduction.

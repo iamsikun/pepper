@@ -27,7 +27,11 @@ This system uses a pipeline of specialized subagents to produce camera-ready aca
                               venue-formatter
                                          ↓
                               peer-reviewer
-                                         ↓
+                                    ↓    ↑
+                            revision-planner ←─ /revise-paper, /update-results
+                                    ↓
+                         selective writer re-invocation
+                                    ↓
                            [camera-ready output]
 ```
 
@@ -72,6 +76,12 @@ paper/
 │   ├── main.tex                 ← assembled paper
 │   ├── review.md                ← peer review output
 │   ├── revision-plan.md         ← actionable revision steps
+│   ├── revisions/               ← revision history
+│   │   └── round-N/
+│   │       ├── review-input.md
+│   │       ├── revision-plan.md
+│   │       ├── changelog.md
+│   │       └── sections-before/
 │   └── camera-ready/            ← submission package
 └── journal/                      ← (optional, same structure as conference/)
     ├── target.yaml
@@ -82,6 +92,12 @@ paper/
     ├── main.tex
     ├── review.md
     ├── revision-plan.md
+    ├── revisions/
+    │   └── round-N/
+    │       ├── review-input.md
+    │       ├── revision-plan.md
+    │       ├── changelog.md
+    │       └── sections-before/
     └── submission/
 ```
 
@@ -168,6 +184,37 @@ Users must download official `.sty`/`.cls` files from venue websites and place t
 
 ## Pipeline Stages
 
-Each target progresses through: `init` → `literature` → `outlining` → `drafting` → `review` → `camera-ready` → `done`
+Each target progresses through: `init` → `literature` → `outlining` → `drafting` → `review` → `revising` → `camera-ready` → `done`
 
 Commands enforce prerequisites based on the current stage.
+
+---
+
+## Revision Workflow
+
+The pipeline supports iterative revision through two commands:
+
+### `/revise-paper` — Review-Driven Revision
+Use after receiving peer review feedback (from `/review-paper` or actual reviewers). Flow:
+1. Saves review feedback and backs up current sections
+2. `revision-planner` agent maps each comment to specific section changes
+3. User reviews and approves the revision plan
+4. Writer agents selectively revise only affected sections
+5. Paper is re-assembled and compiled
+
+### `/update-results` — Results-Driven Update
+Use when experimental results, figures, or data change (not review-driven). Same flow as
+`/revise-paper` but the revision planner focuses on propagating content changes rather than
+addressing reviewer criticism. Stage stays at `drafting`.
+
+### Revision History
+Each revision round is preserved in `paper/<target>/revisions/round-<N>/`:
+- `review-input.md` — the original feedback or change description
+- `revision-plan.md` — the structured plan produced by revision-planner
+- `changelog.md` — summary of changes made
+- `sections-before/` — backup of all .tex files before revision
+
+### Writer Revision Mode
+When invoked during a revision, writer agents (intro-writer, technical-writer, empirics-writer)
+operate in revision mode: they read existing sections first, make only the changes specified
+in the revision plan, and add `% REVISED: <note>` comments for traceability.

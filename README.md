@@ -44,7 +44,10 @@ claude
 # 4. Get peer review feedback
 /review-paper
 
-# 5. Produce camera-ready submission
+# 5. Revise based on feedback (iterative)
+/revise-paper
+
+# 6. Produce camera-ready submission
 /camera-ready
 ```
 
@@ -55,7 +58,8 @@ claude
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                       ORCHESTRATION LAYER                        │
-│  /new-paper → /literature-search → /draft-paper → /camera-ready  │
+│  /new-paper → /literature-search → /draft-paper → /camera-ready   │
+│                                    /revise-paper, /update-results │
 └──────────────────────────────────────────────────────────────────┘
          │               │                │              │
          ▼               ▼                ▼              ▼
@@ -75,6 +79,10 @@ claude
                                    │ citation-│
                                    │ manager  │
                                    └──────────┘
+                                   ┌──────────┐
+                                   │revision- │
+                                   │ planner  │
+                                   └──────────┘
 ```
 
 ---
@@ -92,6 +100,7 @@ claude
 | `latex-assembler` | `paper/<target>/main.tex` | Final assembly |
 | `venue-formatter` | `paper/<target>/camera-ready/` | Submission formatting |
 | `peer-reviewer` | `paper/<target>/review.md`, `revision-plan.md` | Quality check |
+| `revision-planner` | `paper/<target>/revisions/round-N/revision-plan.md` | Planning revisions from feedback or results changes |
 
 ---
 
@@ -103,6 +112,8 @@ claude
 | `/literature-search` | Run literature search + invoke outliner |
 | `/draft-paper` | Draft all sections in parallel + assemble |
 | `/review-paper` | Run peer reviewer on active target |
+| `/revise-paper` | Revise paper based on review feedback |
+| `/update-results` | Update paper after results/data change |
 | `/camera-ready` | Final formatting + submission package |
 | `/set-target` | Switch active target (conference/journal) |
 | `/create-journal-version` | Bootstrap journal version from shared materials |
@@ -136,7 +147,7 @@ claude
 ```
 your-project/
 ├── .claude/
-│   ├── agents/                  ← 9 specialized subagent prompts
+│   ├── agents/                  ← 10 specialized subagent prompts
 │   ├── commands/                ← slash command prompts
 │   └── settings.json            ← tool permissions
 ├── .pepper/
@@ -174,6 +185,12 @@ your-project/
     │   ├── figures/
     │   ├── references.bib
     │   ├── main.tex
+    │   ├── revisions/          ← revision history
+    │   │   └── round-N/
+    │   │       ├── review-input.md
+    │   │       ├── revision-plan.md
+    │   │       ├── changelog.md
+    │   │       └── sections-before/
     │   └── camera-ready/
     └── journal/                 ← (optional) journal target
         └── [same structure]
@@ -195,7 +212,14 @@ your-project/
 ### Phase 4: Quality Check
 `/review-paper` runs the peer-reviewer agent and produces a review + revision plan.
 
-### Phase 5: Camera-Ready
+### Phase 5: Revision (iterative)
+`/revise-paper` takes review feedback, generates a structured revision plan via the revision-planner agent, selectively re-invokes writer agents, and re-assembles the paper. Each round is preserved in `paper/<target>/revisions/round-N/`.
+
+`/update-results` is a lighter variant for when experimental results or data change — same flow but focused on propagating content changes rather than addressing reviewer criticism.
+
+Both commands support multiple rounds and can be repeated as needed.
+
+### Phase 6: Camera-Ready
 `/camera-ready` runs final citation check, venue formatting, compilation, and produces a submission package.
 
 ---
