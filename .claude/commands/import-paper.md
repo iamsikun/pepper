@@ -16,215 +16,96 @@ If non-empty, parse for:
 - Import mode (e.g., "in review mode", "for revision", "retarget to journal")
 - Any combination — use what is provided, ask for the rest
 
-Examples:
-- "paper.tex in review mode" → use paper.tex as source, set review mode, ask for rest
-- "~/drafts/pricing/" → use that directory, ask for mode and other details
-
 If empty, proceed fully interactively as default.
 
 ## Instructions
 
 ### Step 1: Check for Existing State
 
-Check if `paper/` directory and `paper/state.yaml` already exist.
-If they do, **warn the user** and ask whether to:
-- **Overwrite** — delete existing `paper/` and start fresh
-- **Abort** — stop and let the user handle it
-
-Do NOT proceed without user confirmation if state already exists.
+Check if `paper/state.yaml` already exists. If so, **warn the user** and ask whether to
+overwrite or abort. Do NOT proceed without confirmation.
 
 ### Step 2: Locate Source Files
 
-Ask the user for the **path to their existing paper** (a folder or specific `.tex` file).
+Ask for the **path to their existing paper** (folder or `.tex` file). Scan for:
+- `.tex` files — find the **main file** (contains `\documentclass` and `\begin{document}`)
+- `.bib` files
+- `.sty` / `.cls` files (for venue auto-detection)
+- Figures (`.pdf`, `.png`, `.eps`, `.jpg`) referenced via `\includegraphics{}`
 
-Scan that path for:
-- **`.tex` files** — find the **main file** (contains `\documentclass` and `\begin{document}`)
-- **`.bib` files**
-- **`.sty` / `.cls` files** (for venue auto-detection)
-- **Figure files** (`.pdf`, `.png`, `.eps`, `.jpg`) referenced via `\includegraphics{}`
-
-Parse `\input{}` / `\include{}` from the main file to build a dependency tree.
-
-Present findings to the user for confirmation:
-```
-Found paper files:
-  Main file: <path>
-  Included files: <list>
-  Bibliography: <list>
-  Style files: <list>
-  Figures: <list>
-```
+Parse `\input{}` / `\include{}` to build a dependency tree. Present findings for confirmation.
 
 ### Step 3: Analyze Paper Structure
 
 Parse the main `.tex` file to extract:
-- `\title{}` → pre-fill title
-- `\begin{abstract}...\end{abstract}` → will become `abstract.tex`
-- `\section{}` names and boundaries → section inventory
-- `\bibliography{}` or `\addbibresource{}` → locate bib files
-- `\usepackage{<venue_style>}` → venue hint (match against templates in `.pepper/templates/`)
-- `\newcommand` / `\DeclareMathOperator` / custom macros → preserve list
+- `\title{}`, `\begin{abstract}`, `\section{}` names/boundaries
+- `\bibliography{}` or `\addbibresource{}` → bib files
+- `\usepackage{<venue_style>}` → venue hint (match against `.pepper/templates/`)
+- `\newcommand` / `\DeclareMathOperator` → custom macros
 
-Classify as:
-- **Monolithic** — all content in one `.tex` file
-- **Multi-file** — uses `\input{}` / `\include{}` for sections
+Classify as **monolithic** (single file) or **multi-file** (`\input{}`/`\include{}`).
 
 ### Step 4: Gather User Input (with pre-filled suggestions)
 
-Ask the user for the following, pre-filling from what was extracted:
-
-1. **Title** — pre-filled from `\title{}`
-2. **Research topic** — 2-3 sentences (user provides)
-3. **Key contributions** — attempt to extract from the introduction: look for a paragraph mentioning "contributions" or a bulleted/numbered list; present to user for confirmation/editing
-4. **Target venue** — pre-filled if a style package was detected from `.pepper/templates/`, otherwise ask
-5. **Paper type** — Methodology / Theory / Empirical / Theory+Experiments
-6. **Import mode**:
-   - **Review** — "I have a complete draft, I want feedback" → stage will be set to `drafting`
-   - **Revise** — "I want to restructure/rewrite parts" → stage will be set to `outlining`
-   - **Retarget** — "I want to adapt this for a different venue" → stage will be set to `drafting`
-
-Determine the target name from the venue:
-- ML conferences → `conference`
-- Journals → `journal`
+Ask for the same information as `/new-paper` Step 2 (title, topic, contributions, venue,
+paper type), pre-filling from what was extracted. Additionally ask for **import mode**:
+- **Review** — "I have a complete draft, I want feedback" → stage = `drafting`
+- **Revise** — "I want to restructure/rewrite parts" → stage = `outlining`
+- **Retarget** — "I want to adapt this for a different venue" → stage = `drafting`
 
 ### Step 5: Scan Repo for Source Map
 
-Same logic as `/new-paper` Step 1 — scan the repo tree, excluding `.git/`, `.claude/`, `.pepper/`, `paper/`, and `node_modules/`.
-Classify discovered directories using the category patterns from `.pepper/config.yaml` `source_categories`.
-Present to user for confirmation.
+Same as `/new-paper` Step 1 — scan repo tree, classify directories using patterns from
+`.pepper/config.yaml` `source_categories`, present for confirmation.
 
 ### Step 6: Create Directory Structure + State Files
 
-```bash
-mkdir -p paper/shared/literature
-mkdir -p paper/shared/evidence
-mkdir -p paper/<target>/sections
-mkdir -p paper/<target>/figures
-```
+Same structure as `/new-paper` Steps 3-5, with these additions to `paper/state.yaml`:
+- `imported_from: <original paper path>`
+- `import_mode: <review/revise/retarget>` under the target
+- Stage set per import mode (not `init`)
 
-**`paper/state.yaml`:**
-```yaml
-active_target: <target>
-initialized: true
-imported_from: <original paper path>
-targets:
-  <target>:
-    stage: <drafting if Review/Retarget, outlining if Revise>
-    created: <today's date>
-    import_mode: <review/revise/retarget>
-```
-
-**`paper/shared/context.md`:**
-```markdown
-# Paper Context
-
-## Title
-<title>
-
-## Topic
-<2-3 sentences>
-
-## Contributions
-1. <contribution 1>
-2. <contribution 2>
-3. <contribution 3>
-
-## Paper Type
-<type>
-
-## Source Map
-
-The following paths in this repository contain materials relevant to the paper.
-Agents should read from these locations when they need project context.
-
-- Documentation: <discovered doc paths>
-- Source code: <discovered src paths>
-- Experiment results: <discovered results paths>
-- Figures: <discovered figure paths>
-- Data: <discovered data paths>
-- Scripts: <discovered script paths>
-
-## Key Files
-<user can annotate important files here>
-
-## Import Notes
-- Imported from: <original path>
-- Import mode: <review/revise/retarget>
-- Original structure: <monolithic/multi-file>
-- Custom macros: <list of \newcommand / \DeclareMathOperator definitions, or "none">
-```
-
-**`paper/<target>/target.yaml`:**
-```yaml
-name: <target>
-venue: <venue name and year>
-template: <venue template key>
-mode: blind
-page_limit: <from venue requirements>
-audience: <ml, econometrics, marketing, management-science, operations>
-```
-
-Create empty starter files:
-- `paper/shared/claims.md` — with header `# Claims and Evidence`
-- `paper/shared/figure-plan.md` — with header `# Figure Plan`
-- `paper/shared/table-plan.md` — with header `# Table Plan`
+Add to `paper/shared/context.md` an extra `## Import Notes` section with: imported path,
+import mode, original structure (monolithic/multi-file), custom macros list.
 
 ### Step 7: Ingest Paper Files
 
-**Bibliography:**
-- Copy/merge all `.bib` files → `paper/shared/references-master.bib`
-- Also copy to `paper/<target>/references.bib`
+**Bibliography:** Copy/merge all `.bib` files → `paper/shared/references-master.bib` and
+`paper/<target>/references.bib`
 
-**Figures:**
-- Copy all figure files referenced by `\includegraphics{}` → `paper/<target>/figures/`
-- Record old-path → new-path mapping for reference fixup later
+**Figures:** Copy referenced figures → `paper/<target>/figures/`. Record old→new path mapping.
 
-**Sections — Multi-file case:**
-- For each `\input{}`'d file, match its `\section{}` title against `section_name_mapping` from `.pepper/config.yaml`
-- Copy to `paper/<target>/sections/<standard_name>.tex`
-- If a section title doesn't match any mapping, present it to the user and ask them to classify it (or use a slugified version of the title)
-- Preserve any content that doesn't fall into a section (e.g., between `\maketitle` and first `\section{}`) as part of `abstract.tex` or note it
+**Sections — Multi-file:** Match `\section{}` titles to standard names, copy to
+`paper/<target>/sections/<name>.tex`. Ask user to classify unrecognized sections.
 
-**Sections — Monolithic case:**
-- Split the document body at `\section{}` boundaries
-- Each section → `paper/<target>/sections/<standard_name>.tex`
-- Extract abstract from `\begin{abstract}...\end{abstract}` → `abstract.tex`
-- Extract custom macros from preamble → save as `paper/<target>/sections/macros.tex` or note them in `context.md`
+**Sections — Monolithic:** Split at `\section{}` boundaries. Extract abstract from
+`\begin{abstract}`. Extract macros from preamble → `macros.tex` or note in context.md.
 
-**Main file:**
-- Copy the original main `.tex` → `paper/<target>/main.tex` as-is initially
-- The latex-assembler will reconstruct it properly later if needed
+**Main file:** Copy original → `paper/<target>/main.tex` as-is initially.
 
 ### Step 8: Fix Internal References
 
-- Update `\includegraphics{}` paths in all section files to use the `figures/` prefix
-- Verify `\cite{}` keys exist in the imported `.bib` — report any missing keys
-- Report any potentially broken `\ref{}` / `\label{}` references (informational, don't fix these automatically)
+- Update `\includegraphics{}` paths to use `figures/` prefix
+- Verify `\cite{}` keys exist in imported `.bib` — report missing keys
+- Report potentially broken `\ref{}`/`\label{}` references (informational only)
 
 ### Step 9: Populate Shared Artifacts from Paper Content
 
-- **`paper/shared/claims.md`** — Extract contribution bullet points from the introduction and any theorem/proposition statements
-- **`paper/shared/figure-plan.md`** — Inventory all `\begin{figure}` environments with their `\caption{}` text and `\label{}` names
-- **`paper/shared/table-plan.md`** — Inventory all `\begin{table}` environments with their `\caption{}` text and `\label{}` names
+- `paper/shared/claims.md` — extract contributions and theorem/proposition statements
+- `paper/shared/figure-plan.md` — inventory `\begin{figure}` with captions and labels
+- `paper/shared/table-plan.md` — inventory `\begin{table}` with captions and labels
 
 ### Step 10: Generate Retrospective Outline
 
-Invoke the `paper-outliner` agent. It will detect existing `.tex` files in `paper/<target>/sections/` and run in **retrospective mode** — reading the imported sections and producing `paper/<target>/outline.md` that documents the current structure.
-
-- If import mode is **Revise**, this outline becomes the starting point for restructuring
-- If import mode is **Review** or **Retarget**, the outline documents the current state for reference
+Invoke `paper-outliner` agent in **retrospective mode**. It reads existing sections and
+produces `paper/<target>/outline.md` documenting the current structure.
 
 ### Step 11: Confirm
 
-Report to the user:
-- Number of sections imported and their name mappings (original name → standard name)
-- Number of references in bibliography
-- Number of figures and tables found
-- Any issues encountered:
-  - Unmapped sections (and how they were handled)
-  - Missing figure files
-  - Broken `\cite{}` references
-- **Suggested next step** based on import mode:
-  - **Review** → "Run `/review-paper` to get feedback on your draft."
-  - **Revise** → "Edit `paper/<target>/outline.md` to plan your restructuring, then run `/draft-paper`."
-  - **Retarget** → "Run `/create-journal-version` to set up the new venue target."
+Report: sections imported (with name mappings), references count, figures/tables found,
+any issues (unmapped sections, missing figures, broken citations).
+
+**Suggested next step** based on import mode:
+- **Review** → "Run `/review-paper` to get feedback on your draft."
+- **Revise** → "Edit `paper/<target>/outline.md` to plan restructuring, then `/draft-paper`."
+- **Retarget** → "Run `/create-journal-version` to set up the new venue target."

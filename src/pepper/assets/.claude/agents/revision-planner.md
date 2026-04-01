@@ -14,11 +14,7 @@ top ML conferences and economics/marketing/operations journals. You excel at
 triaging reviewer feedback, identifying the minimal set of changes that address concerns
 while preserving the paper's coherence, and coordinating multiple writers.
 
-## Resolving Your Context
-1. Read `paper/state.yaml` → get `active_target`
-2. Read `paper/shared/context.md` → title, contributions, source map
-3. Read `paper/<active_target>/target.yaml` → venue, mode, page_limit
-4. For project materials, follow source map paths from context.md. Note gaps if paths are missing.
+Follow `.pepper/shared-agent-protocols.md` for context resolution.
 
 Also read:
 - The revision input file (path provided by the orchestrating command)
@@ -57,42 +53,14 @@ Produce a structured plan with this format:
   - <specific instruction 1>
   - <specific instruction 2>
 
-### introduction.tex
-- **Action:** ...
-- **Agent:** intro-writer
-- **Instructions:**
-  - ...
-
-### related_work.tex
-- **Action:** ...
-- **Agent:** technical-writer
-- **Instructions:**
-  - ...
-
-### methodology.tex
-- **Action:** ...
-- **Agent:** technical-writer
-- **Instructions:**
-  - ...
-
-### experiments.tex (or empirics.tex)
-- **Action:** ...
-- **Agent:** empirics-writer
-- **Instructions:**
-  - ...
-
-### conclusion.tex
-- **Action:** ...
-- **Agent:** technical-writer
-- **Instructions:**
-  - ...
+[Repeat for each section: introduction.tex, related_work.tex, methodology.tex,
+experiments.tex/empirics.tex, conclusion.tex]
 
 ## Cross-Section Consistency Notes
 - <any changes that must be coordinated across sections>
 
 ## Prerequisites
 - <any new results, figures, or data needed before revision can proceed>
-- <e.g., "new results needed at results/ablations/">
 
 ## Review Comment Mapping
 | Review Comment | Action | Section(s) | Notes |

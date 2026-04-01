@@ -1,22 +1,35 @@
 # /revise-paper
 
-Revise the paper based on review feedback, then re-assemble.
+Revise the paper based on review feedback OR results/data changes, then re-assemble.
 
 ## What This Does
 
-Takes review feedback (from peer review, actual reviewers, or your own notes), produces a
-structured revision plan, selectively invokes writer agents to make changes, and re-assembles
-the paper.
+Takes review feedback or a description of changed results, produces a structured revision
+plan, selectively invokes writer agents to make changes, and re-assembles the paper.
+
+## Mode Detection
+
+This command handles two revision modes:
+
+- **Review mode** (default): Driven by peer review feedback. Stage cycles through revision.
+- **Results-update mode**: Driven by changed results/data/figures. Stage stays at `drafting`.
+
+**How mode is determined:**
+- If `$ARGUMENTS` contains phrases like "results update", "new results", "updated data",
+  "re-ran experiments", "new figures", or the user explicitly says this is a results update
+  → use results-update mode
+- Otherwise → use review mode
 
 ## Input Resolution
 
 `$ARGUMENTS` can be:
-- **Inline text** — treat as review feedback directly
-- **A file path** — read the file as review feedback
-- **Empty** — default to `paper/<active_target>/review.md` (output from `/review-paper`)
+- **Inline text** — treat as review feedback or change description directly
+- **A file path** — read the file as input
+- **Empty** — in review mode, default to `paper/<active_target>/review.md` (output from
+  `/review-paper`). In results-update mode, ask: "What changed? Please describe the
+  updated results or point me to the new data/figures."
 
-If the resolved input does not exist or is empty, stop and ask the user to provide review
-feedback or run `/review-paper` first.
+If the resolved input does not exist or is empty, stop and ask the user to provide input.
 
 ## Prerequisites
 
@@ -30,16 +43,20 @@ feedback or run `/review-paper` first.
 Scan `paper/<active_target>/revisions/` for directories matching `round-<N>`. Set the new
 round to N+1 (or 1 if no prior rounds exist).
 
-### Step 2: Save Review Input
-Create `paper/<active_target>/revisions/round-<N>/review-input.md` with the resolved
-review feedback.
+### Step 2: Save Input
+Create `paper/<active_target>/revisions/round-<N>/review-input.md`.
+
+- **Results-update mode:** Prepend `## Update Type: results-update\n\n` before the user's
+  description. This header tells the revision-planner to focus on mapping content changes
+  rather than addressing reviewer criticism.
+- **Review mode:** Save the review feedback as-is.
 
 ### Step 3: Backup Current Sections
 Copy all `.tex` files from `paper/<active_target>/sections/` to
 `paper/<active_target>/revisions/round-<N>/sections-before/`.
 
 ### Step 4: Generate Revision Plan
-Invoke the `revision-planner` agent. It reads the review input and current sections,
+Invoke the `revision-planner` agent. It reads the input and current sections,
 then produces `paper/<active_target>/revisions/round-<N>/revision-plan.md`.
 
 ### Step 5: Present Plan and Confirm
@@ -47,7 +64,7 @@ Show the user:
 - Summary of revision strategy
 - Per-section action breakdown (which sections change, which don't)
 - Any prerequisites (new results needed, etc.)
-- Any conflicts with claims.md
+- Any conflicts with claims.md (review mode only)
 
 Ask: "Shall I proceed with this revision plan? You can also ask me to modify it first."
 
@@ -60,8 +77,7 @@ Based on the revision plan, invoke ONLY the agents that have assigned work:
   appendix_proofs.tex, or conclusion.tex need changes
 - `empirics-writer` — if experiments.tex, empirics.tex, or appendix_experiments.tex need changes
 
-Run agents in parallel where possible (intro-writer and empirics-writer can run in parallel;
-technical-writer can run in parallel with the others).
+Run agents in parallel where possible.
 
 ### Step 7: Re-Assemble
 1. Run `citation-manager` to update references
@@ -76,13 +92,14 @@ Create `paper/<active_target>/revisions/round-<N>/changelog.md` summarizing:
 
 ### Step 9: Update State
 In `paper/state.yaml`:
-- Set the active target's stage to `drafting` (ready for another review cycle)
+- **Review mode:** Set stage to `drafting` (ready for another review cycle)
+- **Results-update mode:** Stage stays at `drafting`
 - Set or update `revision_round: <N>` for the active target
 
 ## Reporting
 
 After completion, tell the user:
-- Revision round number
+- Revision round number and mode (review / results-update)
 - Sections revised vs. unchanged
 - Compilation status (success/errors)
 - Any remaining TODOs or prerequisites that weren't met
