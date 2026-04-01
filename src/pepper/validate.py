@@ -4,11 +4,20 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import yaml
+
+from .manifest import InstallManifest
+from .sync import MANIFEST_PATH
 
 BANNED_PATTERNS = ("projects/", "papers/", "workspace/", "current-paper.md", "literature/references")
-PROMPT_DIRS = (Path(".claude/agents"), Path(".claude/commands"))
-REQUIRED_FILES = (Path("CLAUDE.md"), Path(".claude/settings.json"))
 SCAFFOLD_DIR = Path(".pepper")
+CORE_REQUIRED = (Path(".pepper/config.yaml"),)
+CLAUDE_REQUIRED = (Path("CLAUDE.md"), Path(".claude/settings.json"), Path(".claude/agents"), Path(".claude/commands"))
+CODEX_REQUIRED = (
+    Path("AGENTS.md"),
+    Path(".pepper/adapters/codex/roles"),
+    Path(".pepper/adapters/codex/workflows"),
+)
 
 
 @dataclass(slots=True)
@@ -21,17 +30,51 @@ class ValidationResult:
         return not self.errors
 
 
-def _scan_prompt_paths(repo_root: Path, result: ValidationResult) -> None:
-    for prompt_dir in PROMPT_DIRS:
-        full_dir = repo_root / prompt_dir
-        if not full_dir.exists():
-            result.warnings.append(f"missing prompt directory: {prompt_dir.as_posix()}")
-            continue
-        for file_path in sorted(full_dir.glob("*.md")):
-            content = file_path.read_text(encoding="utf-8")
-            for pattern in BANNED_PATTERNS:
-                if pattern in content:
-                    result.errors.append(f"{file_path.relative_to(repo_root).as_posix()} contains banned pattern '{pattern}'")
+def _load_adapters(repo_root: Path) -> tuple[str, ...]:
+    manifest = InstallManifest.load(repo_root / MANIFEST_PATH)
+    if manifest is not None:
+        return tuple(manifest.adapters)
+    inferred: list[str] = []
+    if (repo_root / ".claude").exists() or (repo_root / "CLAUDE.md").exists():
+        inferred.append("claude")
+    if (repo_root / "AGENTS.md").exists() or (repo_root / ".pepper/adapters/codex").exists():
+        inferred.append("codex")
+    return tuple(inferred)
+
+
+def _scan_markdown_tree(root: Path, result: ValidationResult, repo_root: Path) -> None:
+    if not root.exists():
+        result.warnings.append(f"missing prompt directory: {root.relative_to(repo_root).as_posix()}")
+        return
+    for file_path in sorted(root.rglob("*.md")):
+        content = file_path.read_text(encoding="utf-8")
+        for pattern in BANNED_PATTERNS:
+            if pattern in content:
+                rel = file_path.relative_to(repo_root).as_posix()
+                result.errors.append(f"{rel} contains banned pattern '{pattern}'")
+
+
+def _check_required_files(repo_root: Path, result: ValidationResult, adapters: tuple[str, ...]) -> None:
+    for required_path in CORE_REQUIRED:
+        if not (repo_root / required_path).exists():
+            result.errors.append(f"missing required scaffold file: {required_path.as_posix()}")
+    if "claude" in adapters:
+        for required_path in CLAUDE_REQUIRED:
+            if not (repo_root / required_path).exists():
+                result.errors.append(f"missing Claude adapter file: {required_path.as_posix()}")
+    if "codex" in adapters:
+        for required_path in CODEX_REQUIRED:
+            if not (repo_root / required_path).exists():
+                result.errors.append(f"missing Codex adapter file: {required_path.as_posix()}")
+
+
+def _scan_prompt_paths(repo_root: Path, result: ValidationResult, adapters: tuple[str, ...]) -> None:
+    if "claude" in adapters:
+        _scan_markdown_tree(repo_root / ".claude/agents", result, repo_root)
+        _scan_markdown_tree(repo_root / ".claude/commands", result, repo_root)
+    if "codex" in adapters:
+        _scan_markdown_tree(repo_root / ".pepper/adapters/codex/roles", result, repo_root)
+        _scan_markdown_tree(repo_root / ".pepper/adapters/codex/workflows", result, repo_root)
 
 
 def _check_templates(repo_root: Path, result: ValidationResult) -> None:
@@ -54,32 +97,32 @@ def _check_runtime_state(repo_root: Path, result: ValidationResult) -> None:
     if not state_file.exists():
         result.errors.append("paper/state.yaml is missing")
         return
-    state_text = state_file.read_text(encoding="utf-8")
-    active_match = re.search(r"^active_target:\s*(\w+)\s*$", state_text, re.MULTILINE)
-    if not active_match:
+    state_data = yaml.safe_load(state_file.read_text(encoding="utf-8")) or {}
+    active_target = state_data.get("active_target")
+    if not active_target:
         result.errors.append("paper/state.yaml is missing active_target")
         return
-    active_target = active_match.group(1)
-    if not (paper_root / active_target).exists():
+    if not (paper_root / str(active_target)).exists():
         result.errors.append(f"paper/{active_target} is missing")
     if not (paper_root / "shared/context.md").exists():
         result.warnings.append("paper/shared/context.md is missing")
-    camera_ready = "stage: camera-ready" in state_text
+
+    camera_ready = any(
+        target_data.get("stage") == "camera-ready"
+        for target_data in (state_data.get("targets") or {}).values()
+        if isinstance(target_data, dict)
+    )
     tex_files = list(paper_root.glob("*/main.tex")) + list(paper_root.glob("*/sections/*.tex"))
-    for tex_file in tex_files:
-        text = tex_file.read_text(encoding="utf-8", errors="ignore")
-        if r"\ref{??}" in text or r"\cite{??}" in text:
-            result.errors.append(f"{tex_file.relative_to(repo_root).as_posix()} has unresolved placeholder references")
-        if camera_ready and "TODO" in text:
-            result.errors.append(f"{tex_file.relative_to(repo_root).as_posix()} contains TODO while in camera-ready stage")
-    # Check for duplicate \label{} across .tex files
     label_locations: dict[str, list[str]] = {}
     for tex_file in tex_files:
         text = tex_file.read_text(encoding="utf-8", errors="ignore")
-        for m in re.finditer(r"\\label\{([^}]+)\}", text):
-            label = m.group(1)
-            rel = tex_file.relative_to(repo_root).as_posix()
-            label_locations.setdefault(label, []).append(rel)
+        rel = tex_file.relative_to(repo_root).as_posix()
+        if r"\ref{??}" in text or r"\cite{??}" in text:
+            result.errors.append(f"{rel} has unresolved placeholder references")
+        if camera_ready and "TODO" in text:
+            result.errors.append(f"{rel} contains TODO while in camera-ready stage")
+        for match in re.finditer(r"\\label\{([^}]+)\}", text):
+            label_locations.setdefault(match.group(1), []).append(rel)
     for label, files in label_locations.items():
         if len(files) > 1:
             result.warnings.append(f"duplicate \\label{{{label}}} in: {', '.join(files)}")
@@ -87,12 +130,9 @@ def _check_runtime_state(repo_root: Path, result: ValidationResult) -> None:
 
 def validate_repo(repo_root: Path) -> ValidationResult:
     result = ValidationResult()
-    for required_path in REQUIRED_FILES:
-        if not (repo_root / required_path).exists():
-            result.errors.append(f"missing required scaffold file: {required_path.as_posix()}")
-    if not (repo_root / SCAFFOLD_DIR / "config.yaml").exists():
-        result.errors.append("missing required scaffold file: .pepper/config.yaml")
-    _scan_prompt_paths(repo_root, result)
+    adapters = _load_adapters(repo_root)
+    _check_required_files(repo_root, result, adapters)
+    _scan_prompt_paths(repo_root, result, adapters)
     _check_templates(repo_root, result)
     _check_runtime_state(repo_root, result)
     return result

@@ -1,4 +1,8 @@
 {
+  "env": {
+    "PAPER_SYSTEM_VERSION": "3.0",
+    "PEPPER_CANONICAL_INTERFACE": "pepper-cli"
+  },
   "permissions": {
     "allow": [
       "Bash(pdflatex:*)",
@@ -14,12 +18,10 @@
       "Bash(mv:*)",
       "Bash(rm:*)",
       "Bash(ls:*)",
+      "Bash(pepper:*)",
       "WebSearch(*)",
       "WebFetch(*)"
     ],
     "deny": []
-  },
-  "env": {
-    "PAPER_SYSTEM_VERSION": "2.0"
   }
 }
