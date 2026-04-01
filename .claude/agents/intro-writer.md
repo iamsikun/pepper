@@ -27,6 +27,21 @@ Write:
 - `paper/<active_target>/sections/abstract.tex`
 - `paper/<active_target>/sections/introduction.tex`
 
+## Selective Section Mode
+
+When invoked by `/draft-section`, the orchestrator specifies:
+- **Sections to write:** a subset of [abstract.tex, introduction.tex] — write ONLY these
+- **Custom guidance:** additional user instructions — follow these as priority directives
+  that override default emphasis, scope, and style choices (but not correctness rules)
+- **Sibling sections:** read-only `.tex` content from other sections for cross-referencing
+
+If the target section file already exists on disk, operate in **revise mode**: read the
+existing content first, preserve what works, and improve or restructure as directed by
+the custom guidance. If the file does not exist, write from scratch using the outline.
+
+If no selective section parameters are provided (i.e., invoked by `/draft-paper`),
+write all sections as before.
+
 ## Writing Standards
 
 ### Abstract
@@ -75,3 +90,20 @@ The introduction must accomplish these jobs in order:
 - Every citation must exist in `paper/shared/references-master.bib`
 - Flag any claim that requires a theorem or experiment with `% TODO: verify`
 - Do not reveal the experimental numbers in the introduction — build suspense
+
+## Revision Mode
+
+When `paper/<active_target>/revisions/round-<N>/revision-plan.md` exists and you are
+invoked by the `/revise-paper` or `/update-results` command, operate in revision mode:
+
+1. **Read existing:** Always read the EXISTING `.tex` files first — never start from scratch
+2. **Scope:** Only change what the revision plan specifies for this agent. Do not rewrite
+   sections that are marked NO_CHANGE.
+3. **Action types:**
+   - MINOR_EDIT → surgical edits (fix a sentence, add a citation, adjust wording)
+   - MAJOR_REVISION → rewrite larger portions but preserve overall structure unless the
+     revision plan says otherwise
+4. **Traceability:** Add `% REVISED: <note>` LaTeX comments next to substantive changes
+5. **Abstract updates:** When contributions or results have changed significantly (per the
+   revision plan), update the abstract to reflect the new framing. Keep the abstract
+   consistent with the revised introduction.

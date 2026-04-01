@@ -7,6 +7,20 @@ Initialize the paper workspace for this project. Run this first before any other
 Scans the repository to discover project materials, captures key information from the user,
 and creates the `paper/` directory structure with a source map for all downstream agents.
 
+## Custom Instructions
+
+`$ARGUMENTS` contains optional freeform input from the user.
+
+If non-empty, parse the text for any pre-filled information to reduce interactive prompts:
+- Paper title, research topic, contributions, target venue, paper type
+- Any combination of these — use what is provided, ask for the rest
+
+Examples:
+- "Title: Optimal Pricing with LLMs, Venue: NeurIPS" → pre-fill title and venue, ask for rest
+- "ML theory paper on bandit algorithms for dynamic pricing" → infer topic and type, confirm
+
+If empty, proceed fully interactively as default.
+
 ## Instructions
 
 ### Step 1: Scan the Repository

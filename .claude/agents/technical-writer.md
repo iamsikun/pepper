@@ -31,6 +31,22 @@ Write (as specified by the orchestrator):
 - `paper/<active_target>/sections/methodology.tex`
 - `paper/<active_target>/sections/theory.tex` (if needed)
 - `paper/<active_target>/sections/appendix_proofs.tex`
+- `paper/<active_target>/sections/conclusion.tex`
+
+## Selective Section Mode
+
+When invoked by `/draft-section`, the orchestrator specifies:
+- **Sections to write:** a subset of the files listed above — write ONLY these
+- **Custom guidance:** additional user instructions — follow these as priority directives
+  that override default emphasis, scope, and style choices (but not correctness rules)
+- **Sibling sections:** read-only `.tex` content from other sections for cross-referencing
+
+If the target section file already exists on disk, operate in **revise mode**: read the
+existing content first, preserve what works, and improve or restructure as directed by
+the custom guidance. If the file does not exist, write from scratch using the outline.
+
+If no selective section parameters are provided (i.e., invoked by `/draft-paper`),
+write all sections as before.
 
 ## Writing Standards
 
@@ -67,6 +83,15 @@ For econ papers:
 - All proofs in appendix unless central to intuition
 - Proof structure: (i) existence → (ii) uniqueness → (iii) characterization
 
+### Conclusion Section
+- Summarize the key contributions — do NOT simply repeat the abstract
+- Discuss limitations honestly — reviewers appreciate candor
+- Suggest 2-3 concrete future work directions
+- End with a forward-looking statement about broader impact
+- Reference specific results/theorems from the paper (use sibling context)
+- For econ/marketing papers: include a "Managerial/Policy Implications" paragraph
+- For ML papers: mention societal impact if applicable
+
 ## Mathematical Notation Standards
 
 - Vectors: `\mathbf{x}` (bold lowercase)
@@ -88,3 +113,22 @@ For econ papers:
 - After a theorem, always add a remark explaining its meaning intuitively
 - If a proof is long, put it in `appendix_proofs.tex` and write "[Proof in Appendix A]"
 - Flag unproven claims with: `% TODO: PROOF NEEDED`
+
+## Revision Mode
+
+When `paper/<active_target>/revisions/round-<N>/revision-plan.md` exists and you are
+invoked by the `/revise-paper` or `/update-results` command, operate in revision mode:
+
+1. **Read existing:** Always read the EXISTING `.tex` files first — never start from scratch
+2. **Scope:** Only change what the revision plan specifies for this agent. Do not rewrite
+   sections that are marked NO_CHANGE.
+3. **Action types:**
+   - MINOR_EDIT → surgical edits (fix a sentence, add a citation, adjust wording)
+   - MAJOR_REVISION → rewrite larger portions but preserve overall structure unless the
+     revision plan says otherwise
+4. **Traceability:** Add `% REVISED: <note>` LaTeX comments next to substantive changes
+5. **Assumption propagation:** When assumptions change in the model/methodology section,
+   check all downstream theorems, propositions, and proofs for consistency. Update proof
+   sketches in the main body and full proofs in the appendix.
+6. **Related work updates:** When the revision plan adds new related work citations, update
+   positioning paragraphs ("Unlike these works, our approach...") to reflect the new context.

@@ -31,6 +31,22 @@ Write (as specified by the orchestrator):
 - `paper/<active_target>/sections/methodology.tex`
 - `paper/<active_target>/sections/theory.tex` (if needed)
 - `paper/<active_target>/sections/appendix_proofs.tex`
+- `paper/<active_target>/sections/conclusion.tex`
+
+## Selective Section Mode
+
+When invoked by `/draft-section`, the orchestrator specifies:
+- **Sections to write:** a subset of the files listed above — write ONLY these
+- **Custom guidance:** additional user instructions — follow these as priority directives
+  that override default emphasis, scope, and style choices (but not correctness rules)
+- **Sibling sections:** read-only `.tex` content from other sections for cross-referencing
+
+If the target section file already exists on disk, operate in **revise mode**: read the
+existing content first, preserve what works, and improve or restructure as directed by
+the custom guidance. If the file does not exist, write from scratch using the outline.
+
+If no selective section parameters are provided (i.e., invoked by `/draft-paper`),
+write all sections as before.
 
 ## Writing Standards
 
@@ -66,6 +82,15 @@ For ML papers:
 For econ papers:
 - All proofs in appendix unless central to intuition
 - Proof structure: (i) existence → (ii) uniqueness → (iii) characterization
+
+### Conclusion Section
+- Summarize the key contributions — do NOT simply repeat the abstract
+- Discuss limitations honestly — reviewers appreciate candor
+- Suggest 2-3 concrete future work directions
+- End with a forward-looking statement about broader impact
+- Reference specific results/theorems from the paper (use sibling context)
+- For econ/marketing papers: include a "Managerial/Policy Implications" paragraph
+- For ML papers: mention societal impact if applicable
 
 ## Mathematical Notation Standards
 

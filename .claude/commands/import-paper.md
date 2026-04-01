@@ -7,6 +7,21 @@ Use this when you have a working paper and want to leverage pepper's review, rev
 
 Ingests an existing LaTeX paper into the `paper/` directory structure, reverse-engineers the required state files, decomposes the paper into sections, and enters the pipeline mid-stream.
 
+## Custom Instructions
+
+`$ARGUMENTS` contains optional freeform input from the user.
+
+If non-empty, parse for:
+- Path to the paper (e.g., "~/papers/my-draft/main.tex")
+- Import mode (e.g., "in review mode", "for revision", "retarget to journal")
+- Any combination — use what is provided, ask for the rest
+
+Examples:
+- "paper.tex in review mode" → use paper.tex as source, set review mode, ask for rest
+- "~/drafts/pricing/" → use that directory, ask for mode and other details
+
+If empty, proceed fully interactively as default.
+
 ## Instructions
 
 ### Step 1: Check for Existing State

@@ -7,6 +7,19 @@ Run a comprehensive literature search for the current paper.
 Invokes the `literature-reviewer` agent to search for relevant academic papers,
 synthesize the findings, and populate the bibliography.
 
+## Custom Instructions
+
+`$ARGUMENTS` contains optional freeform guidance from the user.
+
+If non-empty, use this text to customize the search strategy. The guidance may specify:
+- Focus areas (e.g., "focus on causal inference literature")
+- Additional search threads (e.g., "also search for papers on fairness in pricing")
+- Specific papers or authors to find (e.g., "find recent work by Susan Athey on this topic")
+- Scope adjustments (e.g., "only search the economics literature, skip ML")
+
+Incorporate this guidance into the search threads in Step 3 below.
+If empty, derive search threads from the topic and contributions as default.
+
 ## Instructions
 
 1. Read `paper/shared/context.md` to get the topic and contributions.

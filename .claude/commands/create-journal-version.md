@@ -7,6 +7,20 @@ Create a journal version of the paper alongside the conference version.
 Sets up a journal target directory with its own outline, sections, and build artifacts,
 sharing the research materials from `paper/shared/`.
 
+## Custom Instructions
+
+`$ARGUMENTS` contains optional freeform input from the user.
+
+If non-empty, parse for:
+- Target journal venue (e.g., "Management Science", "Econometrica")
+- Whether to bootstrap from conference outline (e.g., "based on the conference version")
+
+Examples:
+- "Management Science" → use as venue, skip the venue question
+- "Econometrica, bootstrap from conference" → set venue and bootstrap preference
+
+If empty, proceed fully interactively as default.
+
 ## Instructions
 
 ### Step 1: Ask for Journal Venue

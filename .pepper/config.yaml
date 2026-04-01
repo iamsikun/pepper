@@ -59,6 +59,7 @@ stages:
   - outlining
   - drafting
   - review
+  - revising
   - camera-ready
   - done
 
@@ -88,17 +89,3 @@ source_categories:
   scripts:
     - "scripts/"
     - "bin/"
-
-# Section name mapping for /import-paper (maps standard names to common LaTeX section titles)
-import:
-  section_name_mapping:
-    introduction: ["Introduction"]
-    abstract: ["Abstract"]
-    related_work: ["Related Work", "Literature Review", "Prior Work"]
-    background: ["Background", "Preliminaries", "Setup", "Problem Setup", "Problem Formulation"]
-    methodology: ["Method", "Methodology", "Model", "Approach", "Framework", "Our Approach", "Proposed Method"]
-    experiments: ["Experiments", "Evaluation", "Results", "Experimental Results", "Empirical Results"]
-    empirics: ["Empirical Analysis", "Data and Estimation", "Estimation"]
-    conclusion: ["Conclusion", "Discussion", "Concluding Remarks", "Conclusion and Future Work"]
-    appendix_proofs: ["Proofs", "Technical Proofs", "Appendix: Proofs"]
-    appendix_experiments: ["Additional Experiments", "Supplementary Experiments", "Appendix: Experiments"]

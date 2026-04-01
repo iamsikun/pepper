@@ -7,6 +7,18 @@ Prepare the final camera-ready submission package for the target venue.
 Takes the assembled paper through final formatting, verification, and packaging
 to produce a submission-ready package.
 
+## Custom Instructions
+
+`$ARGUMENTS` contains optional freeform guidance from the user.
+
+If non-empty, incorporate this guidance into the formatting and packaging steps. Examples:
+- "use the updated author list in authors.txt" → read that file for author info
+- "add acknowledgments: NSF grant #12345" → include in acknowledgments section
+- "skip anonymization, this is camera-ready" → set mode accordingly
+- "check that all figures are at least 300 DPI" → add to visual inspection
+
+If empty, proceed with default behavior.
+
 ## Prerequisites
 
 Read `paper/state.yaml` to get the active target.

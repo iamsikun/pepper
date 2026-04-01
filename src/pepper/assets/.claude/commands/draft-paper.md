@@ -7,6 +7,19 @@ Draft all sections of the paper in parallel, then assemble.
 Coordinates multiple section-writing agents to draft the complete paper,
 then assembles everything into a compilable LaTeX document.
 
+## Custom Instructions
+
+`$ARGUMENTS` contains optional freeform guidance from the user.
+
+If non-empty, pass this text as **custom guidance** to every writer agent invoked below.
+The agents treat custom guidance as priority directives that override default emphasis,
+scope, and style choices (but not correctness rules). Examples:
+- "emphasize theoretical rigor" → all agents prioritize formal presentation
+- "keep it concise, we're tight on pages" → agents write tighter prose
+- "focus on the marketing angle" → agents frame content for a marketing audience
+
+If empty, proceed with default behavior — no special guidance is passed.
+
 ## Prerequisites
 
 Read `paper/state.yaml` and verify the active target's stage is at least `outlining`.
