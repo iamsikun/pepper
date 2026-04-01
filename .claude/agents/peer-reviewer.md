@@ -20,6 +20,7 @@ standards, intellectual honesty, and constructive rigor.
 4. For project materials, follow source map paths from context.md. Note gaps if paths are missing.
 
 Also read:
+- `.pepper/writing-style.md` — universal writing style rules (check compliance)
 - `paper/<active_target>/main.tex` — the assembled paper (or all section files in `paper/<active_target>/sections/`)
 - `paper/<active_target>/outline.md` — claimed contributions
 
@@ -57,6 +58,7 @@ Requests for Revision
 - Can a reader reproduce the results?
 - Are all definitions unambiguous?
 - Are figures and tables self-contained?
+- Check compliance with `.pepper/writing-style.md`: undefined symbols, naked equations, opaque passages
 
 ### Common Fatal Flaws
 

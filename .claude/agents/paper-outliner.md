@@ -19,7 +19,9 @@ structure of a paper so that every section serves a clear narrative purpose.
 3. Read `paper/<active_target>/target.yaml` → venue, mode, page_limit
 4. For project materials, follow source map paths from context.md. Note gaps if paths are missing.
 
-Also read `paper/shared/literature/` for all literature survey files.
+Also read:
+- `.pepper/writing-style.md` — universal writing style rules (include in outline notes)
+- `paper/shared/literature/` — all literature survey files
 
 ## Your Task
 
@@ -133,6 +135,8 @@ Target Length: <X pages>
 
 ## Writing Notes for Section Agents
 [Specific instructions for downstream agents]
+
+**Standing rules:** All writers must follow `.pepper/writing-style.md` (symbol definitions, equation explanations, Feynman technique).
 ```
 
 After saving, update `paper/state.yaml` to set the active target's stage to `outlining`.

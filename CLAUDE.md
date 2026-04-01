@@ -144,12 +144,7 @@ Users must download official `.sty`/`.cls` files from venue websites and place t
 
 ## Writing Style Guidelines
 
-### Universal Rules
-- Every claim needs either a citation or a proof
-- Define all notation and abbreviation before using it
-- Tables and figures need to be self-contained: readers can understand the message at first glance
-- Figures: always include captions that are self-contained
-- Never use "we show" without actually showing it
+Universal writing style rules are defined in `.pepper/writing-style.md`. All agents must read and follow that file.
 
 ### For ML Conference Papers
 - Lead with a clear **problem statement** and **why it matters**

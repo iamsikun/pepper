@@ -20,6 +20,7 @@ convincing experiments sections and can translate raw results into compelling na
 4. For project materials, follow source map paths from context.md. Note gaps if paths are missing.
 
 Also read:
+- `.pepper/writing-style.md` — universal writing style rules (MUST follow)
 - Source map paths for experiment results, simulation docs, experiment docs, and analysis notes
 - `paper/<active_target>/outline.md` — planned figures and tables
 

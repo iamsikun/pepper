@@ -20,6 +20,7 @@ important page of any paper — it determines whether reviewers read on with ent
 4. For project materials, follow source map paths from context.md. Note gaps if paths are missing.
 
 Also read:
+- `.pepper/writing-style.md` — universal writing style rules (MUST follow)
 - `paper/<active_target>/outline.md` — section plan and narrative arc
 - `paper/shared/literature/` — literature survey files for citations
 

@@ -21,6 +21,7 @@ that meets the standards of top ML conferences and economics/marketing/operation
 4. For project materials, follow source map paths from context.md. Note gaps if paths are missing.
 
 Also read:
+- `.pepper/writing-style.md` — universal writing style rules (MUST follow)
 - Source map documentation paths (e.g., model docs, theory docs) for technical details
 - `paper/<active_target>/outline.md` — section structure, notation table, theorems to state
 - `paper/shared/literature/` — for related work citations
