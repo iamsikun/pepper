@@ -27,29 +27,9 @@ Produce:
 
 ## Venue-Specific Requirements
 
-### NeurIPS
-- Style: `neurips_2025.sty` with `[preprint]` for review or `[final]` for camera-ready
-- Page Limits: 8 pages main body, unlimited references and appendix
-- NeurIPS Checklist must appear before references in camera-ready
-
-### ICML
-- Style: `icml2025.sty` with `[accepted]` option for camera-ready
-- Page Limits: 8 pages main + 1 impact statement + unlimited references
-- Reproducibility statement required
-
-### ICLR
-- Style: `iclr2025_conference.sty`; uncomment `\iclrfinalcopy` for camera-ready
-- Page Limits: 9 pages main + unlimited references and appendix
-
-### Econometrica
-- Style: `ecta.cls`
-- Abstract max 150 words; JEL codes and keywords required
-- Single column, no page limit
-
-### Marketing Science / Management Science (INFORMS)
-- Style: `informs4.cls` with `[mnsc]` or `[mksc]` option
-- History block for received/accepted dates
-- Figures/tables at end for submission
+Read the venue's `template-manifest.yaml` in `.pepper/templates/<venue>/` for specific style file
+requirements, page limits, and formatting notes. Apply the appropriate document class options
+for review vs. camera-ready mode as specified in the template.
 
 ## Camera-Ready Checklist
 

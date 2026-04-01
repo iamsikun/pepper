@@ -1,4 +1,4 @@
-venue: INFORMS (Marketing Science / Management Science / Operations Research)
+venue: informs
 format: single-column
 page_limit: 40
 audience: marketing, management-science, operations
@@ -27,8 +27,8 @@ anonymization:
   camera_ready: false
 
 notes:
-  - "Use [mnsc] option for Management Science, [mksc] for Marketing Science, [opre] for Operations Research"
+  - "Use the appropriate document class option for your target journal"
   - "Abstract must be 200 words or fewer"
   - "5 keywords required"
   - "History block (received/revised/accepted) required for camera-ready"
-  - "Download informs4.cls from the INFORMS website"
+  - "Download the required style file from the official venue website"

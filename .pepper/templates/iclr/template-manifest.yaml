@@ -1,4 +1,4 @@
-venue: ICLR
+venue: iclr
 format: single-column
 page_limit: 9
 audience: ml
@@ -27,4 +27,4 @@ anonymization:
 
 notes:
   - "Uncomment \\iclrfinalcopy for camera-ready"
-  - "Download iclr2025_conference.sty from the official ICLR website"
+  - "Download the required style file from the official venue website"

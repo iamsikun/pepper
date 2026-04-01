@@ -47,12 +47,8 @@ abstract → introduction → related_work → background (if exists) → method
 
 | Venue | Style |
 |---|---|
-| NeurIPS | `neurips` |
-| ICML | `icml2025` |
-| ICLR | `iclr2025` |
-| Econometrica | `ecta` |
-| Management Science / Marketing Science | `informs2014` |
-| Generic fallback | `plainnat` |
+Use the `bibstyle` field from `.pepper/config.yaml` for the active venue.
+Fall back to `plainnat` if not specified.
 
 ### Step 5: Check Cross-References
 Verify labels, citations, and figure references all resolve.

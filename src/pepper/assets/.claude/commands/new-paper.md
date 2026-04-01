@@ -32,12 +32,12 @@ Ask the user for:
 1. **Paper Title** (working title is fine)
 2. **Research Topic** — 2-3 sentence description
 3. **Key Contributions** — 2-4 main claims
-4. **Target Venue** — one of: NeurIPS, ICML, ICLR, Econometrica, Marketing Science, Management Science
+4. **Target Venue** — select from venues defined in `.pepper/config.yaml`
 5. **Paper Type** — Methodology / Theory / Empirical / Theory+Experiments
 
 Determine the target name from the venue:
-- ML conferences (NeurIPS, ICML, ICLR) → `conference`
-- Journals (Econometrica, Marketing Science, Management Science) → `journal`
+- ML conferences → `conference`
+- Journals → `journal`
 
 ### Step 3: Create Directory Structure
 

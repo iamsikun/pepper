@@ -1,4 +1,4 @@
-venue: Econometrica
+venue: econometrica
 format: single-column
 page_limit: null
 audience: econometrics
@@ -30,4 +30,4 @@ notes:
   - "Abstract must be 150 words or fewer"
   - "JEL classification codes are required"
   - "Keywords (3-6) are required"
-  - "Download ecta.cls from the Econometric Society website"
+  - "Download the required style file from the official venue website"

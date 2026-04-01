@@ -31,7 +31,7 @@ Invoke `venue-formatter` to:
 - Check page limits (count carefully!)
 - Add/remove anonymization as appropriate
 - Add acknowledgments section (camera-ready only)
-- Add venue-specific checklist (NeurIPS requires this)
+- Add venue-specific checklist (if required by venue)
 - Verify figure resolution
 
 ### Step 3: Final Compilation

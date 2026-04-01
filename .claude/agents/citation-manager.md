@@ -47,11 +47,8 @@ For each entry, ensure proper formatting of author, title, year, venue fields.
 
 | Abbreviation | Full Name for BibTeX |
 |---|---|
-| NeurIPS / NIPS | Advances in Neural Information Processing Systems |
-| ICML | Proceedings of the International Conference on Machine Learning |
-| ICLR | Proceedings of the International Conference on Learning Representations |
-| AAAI | Proceedings of the AAAI Conference on Artificial Intelligence |
-| JMLR | Journal of Machine Learning Research |
+Use full venue names in BibTeX entries, not abbreviations. For example, use the
+full proceedings name rather than acronyms.
 
 ### Step 6: BibTeX Key Convention
 Keys follow: `AuthorYEARkeyword` (no spaces, no special chars)

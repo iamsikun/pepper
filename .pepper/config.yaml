@@ -4,7 +4,7 @@ version: "2.0"
 # Venue registry
 venues:
   neurips:
-    name: "NeurIPS"
+    name: "ML Conference A"
     template_dir: neurips
     format: double-column
     page_limit: 8
@@ -12,7 +12,7 @@ venues:
     bibstyle: neurips
     blind_review: true
   icml:
-    name: "ICML"
+    name: "ML Conference B"
     template_dir: icml
     format: double-column
     page_limit: 8
@@ -20,7 +20,7 @@ venues:
     bibstyle: icml2025
     blind_review: true
   iclr:
-    name: "ICLR"
+    name: "ML Conference C"
     template_dir: iclr
     format: single-column
     page_limit: 9
@@ -28,7 +28,7 @@ venues:
     bibstyle: iclr2025
     blind_review: true
   econometrica:
-    name: "Econometrica"
+    name: "Economics Journal"
     template_dir: econometrica
     format: single-column
     page_limit: null
@@ -36,7 +36,7 @@ venues:
     bibstyle: ecta
     blind_review: true
   marketing-science:
-    name: "Marketing Science"
+    name: "Marketing Journal"
     template_dir: informs
     format: single-column
     page_limit: 40
@@ -44,7 +44,7 @@ venues:
     bibstyle: informs2014
     blind_review: true
   management-science:
-    name: "Management Science"
+    name: "Management Journal"
     template_dir: informs
     format: single-column
     page_limit: 40

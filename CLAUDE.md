@@ -6,9 +6,7 @@
 ## Researcher Profile
 
 **Domains:** Machine Learning, Marketing, Econometrics, Operations, Quant Finance
-**Target Venues:**
-- ML Conferences: NeurIPS, ICML, ICLR, AAAI
-- Journals: Econometrica, Marketing Science, Management Science, Journal of Marketing Research, Operations Research
+**Target Venues:** Configured per-project in `.pepper/config.yaml`
 
 ---
 
@@ -137,7 +135,7 @@ Users must download official `.sty`/`.cls` files from venue websites and place t
 - Figures: always include captions that are self-contained
 - Never use "we show" without actually showing it
 
-### For ML Papers (NeurIPS / ICML / ICLR)
+### For ML Conference Papers
 - Lead with a clear **problem statement** and **why it matters**
 - State contributions as a bulleted list in the introduction (3-5 bullet points)
 - Methodology: formal definitions first, then algorithm, then theoretical guarantees
@@ -146,7 +144,7 @@ Users must download official `.sty`/`.cls` files from venue websites and place t
 - Related work: position clearly against at least 10 recent papers
 - 8 pages main body + unlimited references
 
-### For Economics/Marketing/Operations Papers (Econometrica, Management Science, Marketing Science)
+### For Economics/Marketing/Operations Journal Papers
 - Abstract should state: research question, method, finding, contribution — in that order
 - Introduction
   - Must state why the problem matters for actual businesses
@@ -163,14 +161,7 @@ Users must download official `.sty`/`.cls` files from venue websites and place t
 
 ## Venue-Specific Requirements
 
-| Venue | Format | Page Limit | Style File |
-|---|---|---|---|
-| NeurIPS | Double-column | 8+refs | `neurips_2025.sty` |
-| ICML | Double-column | 8+refs | `icml2025.sty` |
-| ICLR | Single-column | 9+refs | `iclr2025.sty` |
-| Econometrica | Single-column | No limit | `ecta.cls` |
-| Marketing Science | Single-column | 40 pages | INFORMS |
-| Management Science | Single-column | 40 pages | INFORMS |
+Venue formatting details (page limits, style files, column format) are defined in `.pepper/config.yaml` and `.pepper/templates/<venue>/template-manifest.yaml`.
 
 ---
 

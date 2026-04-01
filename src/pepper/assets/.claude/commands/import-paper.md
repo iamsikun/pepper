@@ -47,7 +47,7 @@ Parse the main `.tex` file to extract:
 - `\begin{abstract}...\end{abstract}` → will become `abstract.tex`
 - `\section{}` names and boundaries → section inventory
 - `\bibliography{}` or `\addbibresource{}` → locate bib files
-- `\usepackage{neurips_2025}` / `icml2025` / `iclr2025` / etc. → venue hint
+- `\usepackage{<venue_style>}` → venue hint (match against templates in `.pepper/templates/`)
 - `\newcommand` / `\DeclareMathOperator` / custom macros → preserve list
 
 Classify as:
@@ -61,7 +61,7 @@ Ask the user for the following, pre-filling from what was extracted:
 1. **Title** — pre-filled from `\title{}`
 2. **Research topic** — 2-3 sentences (user provides)
 3. **Key contributions** — attempt to extract from the introduction: look for a paragraph mentioning "contributions" or a bulleted/numbered list; present to user for confirmation/editing
-4. **Target venue** — pre-filled if a style package was detected (e.g., `neurips_2025.sty` → NeurIPS), otherwise ask
+4. **Target venue** — pre-filled if a style package was detected from `.pepper/templates/`, otherwise ask
 5. **Paper type** — Methodology / Theory / Empirical / Theory+Experiments
 6. **Import mode**:
    - **Review** — "I have a complete draft, I want feedback" → stage will be set to `drafting`
@@ -69,8 +69,8 @@ Ask the user for the following, pre-filling from what was extracted:
    - **Retarget** — "I want to adapt this for a different venue" → stage will be set to `drafting`
 
 Determine the target name from the venue:
-- ML conferences (NeurIPS, ICML, ICLR) → `conference`
-- Journals (Econometrica, Marketing Science, Management Science) → `journal`
+- ML conferences → `conference`
+- Journals → `journal`
 
 ### Step 5: Scan Repo for Source Map
 

@@ -11,11 +11,7 @@ sharing the research materials from `paper/shared/`.
 
 ### Step 1: Ask for Journal Venue
 
-Ask the user which journal venue to target:
-- Econometrica
-- Marketing Science
-- Management Science
-- Operations Research
+Ask the user which journal venue to target (from the journal venues defined in `.pepper/config.yaml`).
 
 ### Step 2: Create Directory Structure
 

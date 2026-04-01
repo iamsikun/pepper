@@ -3,7 +3,7 @@
 An installable Claude Code subagent system for writing camera-ready academic papers in
 **machine learning**, **marketing**, **economics**, and **operations research**.
 
-Targets: NeurIPS · ICML · ICLR · Econometrica · Marketing Science · Management Science
+Supports ML conferences and economics/marketing/operations journals.
 
 ---
 
@@ -139,19 +139,7 @@ claude
 
 ## Supported Venues
 
-### ML Conferences
-| Venue | Style | Pages | Blind |
-|---|---|---|---|
-| NeurIPS | `neurips_2025.sty` | 8+refs | Yes |
-| ICML | `icml2025.sty` | 8+refs | Yes |
-| ICLR | `iclr2025.sty` | 9+refs | Yes |
-
-### Journals
-| Venue | Style | Blind |
-|---|---|---|
-| Econometrica | `ecta.cls` | Yes |
-| Marketing Science | `informs4.cls` | Yes |
-| Management Science | `informs4.cls` | Yes |
+Venue definitions live in `.pepper/config.yaml`. Each venue has a LaTeX template in `.pepper/templates/<venue>/`.
 
 > **Note:** Download official `.sty`/`.cls` files from each venue's website and place them in `.pepper/templates/<venue>/`. These files cannot be distributed due to copyright.
 
@@ -169,12 +157,7 @@ your-project/
 │   └── settings.json            ← tool permissions
 ├── .pepper/
 │   ├── config.yaml              ← system defaults (venue registry, stages)
-│   ├── templates/               ← venue-specific LaTeX templates
-│   │   ├── neurips/
-│   │   ├── icml/
-│   │   ├── iclr/
-│   │   ├── econometrica/
-│   │   └── informs/
+│   ├── templates/               ← venue-specific LaTeX templates (one dir per venue)
 │   └── scripts/
 │       ├── install.sh           ← installer script
 │       └── validate.sh          ← validation script

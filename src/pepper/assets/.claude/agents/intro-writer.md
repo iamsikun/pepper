@@ -56,18 +56,18 @@ The introduction must accomplish these jobs in order:
 
 ## Style by Venue
 
-### NeurIPS / ICML / ICLR Style
+### ML Conference Style
 - Use `\citep{}` for parenthetical and `\citet{}` for textual citations
 - Contributions as `\begin{itemize}` list
 - First paragraph should reference a real-world application or empirical phenomenon
 
-### Econometrica Style
+### Economics Journal Style
 - More formal and discursive; no bullet lists — contributions as flowing prose
 - Must include a dedicated "Contribution to the Literature" paragraph
 - First paragraph often starts with an observation, a paradox, or a stylized fact
 
-### Marketing Science / Management Science Style
-- Similar to Econometrica but can mention managerial implications in intro
+### Marketing / Management Journal Style
+- Similar to economics journal style but can mention managerial implications in intro
 - Include a brief "roadmap" paragraph at the end
 
 ## Important Rules
