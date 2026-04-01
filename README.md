@@ -9,19 +9,33 @@ Supports ML conferences and economics/marketing/operations journals.
 
 ## Installation
 
-```bash
-# Add the private package to a project repo
-uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.1.0
+Pepper is a CLI tool, not a library. Install it once and use it across all your research repos.
 
-# Materialize the scaffold into that repo
-uv run pepper install
+```bash
+# Install as a global CLI tool (one-time)
+uv tool install git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.1.0
+
+# Or, for local development (editable — changes take effect immediately):
+uv tool install -e /path/to/pepper
+```
+
+Then in any research repo:
+
+```bash
+pepper install
 ```
 
 Upgrade later:
 
 ```bash
-uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.2.0
-uv run pepper sync
+# Upgrade to latest
+uv tool upgrade pepper
+
+# Or reinstall a specific tag:
+uv tool install git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.2.0 --force
+
+# Then sync each project:
+pepper sync
 ```
 
 ---
@@ -237,6 +251,7 @@ One project can have up to two publication targets: conference and journal. They
 
 ## Prerequisites
 
+- [`uv`](https://docs.astral.sh/uv/) for installing pepper as a CLI tool
 - Claude Code installed and running
 - LaTeX distribution (TeX Live or MiKTeX) for compilation
 - Venue style files downloaded (see `.pepper/templates/` for which files are needed)
@@ -245,4 +260,4 @@ One project can have up to two publication targets: conference and journal. They
 
 ## Version
 
-System v3.0 — Project-local `uv`-managed package scaffold.
+System v3.0 — Global CLI tool, project-local scaffold.

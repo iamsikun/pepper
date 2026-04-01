@@ -4,26 +4,26 @@
 
 Transform this repository into a **versioned Python package** that stays in a
 **private GitHub repository** and installs a **project-local agentic
-paper-writing scaffold** into any research repo via `uv`.
+paper-writing scaffold** into any research repo as a global CLI tool via `uv`.
 
-The system should feel like a normal per-project tool dependency:
+The system should feel like a standard CLI tool:
 
-1. Add the private package to a research repo with `uv`.
-2. Run a local CLI to install or sync the scaffold files into that repo.
+1. Install pepper once as a global tool with `uv tool install`.
+2. Run `pepper install` in any research repo to scaffold it.
 3. Open Claude Code in that repo.
 4. Run `/new-paper` and continue the paper workflow locally.
-5. Upgrade the package later with `uv`, then re-sync the scaffold.
+5. Upgrade pepper globally, then `pepper sync` each project.
 
 ## Target User Experience
 
-### Recommended flow: tagged releases
+### Recommended flow: global tool install
 
 ```bash
-# In a project repo, add a pinned version of the private package
-uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.1.0
+# One-time: install pepper as a global CLI tool
+uv tool install git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.1.0
 
-# Materialize the scaffold into the current repo
-uv run pepper install
+# In any research repo, scaffold it
+pepper install
 
 # Open Claude Code and initialize the paper workspace
 claude
@@ -33,26 +33,22 @@ claude
 Upgrade later:
 
 ```bash
-# Move the repo to a newer tagged version
-uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.2.0
+# Upgrade to latest
+uv tool upgrade pepper
 
-# Refresh only package-managed scaffold files
-uv run pepper sync
+# Or reinstall a specific tag
+uv tool install git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.2.0 --force
+
+# Sync each project
+pepper sync
 ```
 
-### Optional flow: rolling branch
+### Development flow: editable install
 
 ```bash
-uv add --dev git+ssh://git@github.com/<you>/<pepper-private-repo>.git --branch stable
-uv run pepper install
-
-# Later
-uv lock --upgrade-package pepper
-uv run pepper sync
+# For pepper maintainers — changes to source take effect immediately
+uv tool install -e /path/to/pepper
 ```
-
-Tagged releases are the default recommendation. They are easier to reason about
-and safer when multiple research repos are active at once.
 
 ## Desired End State
 
