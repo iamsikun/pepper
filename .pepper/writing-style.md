@@ -33,6 +33,36 @@ must follow these rules. The peer-reviewer must check for compliance.
 - Figures: always include captions that are self-contained
 - Never use "we show" without actually showing it
 - Use `\citet{}` when citing as a noun ("Vaswani et al. (2017) show..."), `\citep{}` in parentheses
+- **Figure and table labels:** Always use the label assigned in the outline's Figure & Table Plan. Do not invent new label names. If the outline assigns `tab:emp_summary_stats`, use exactly `\label{tab:emp_summary_stats}`. This prevents label collisions when multiple agents write sections in parallel.
+
+---
+
+## Table Notes Convention
+
+When a table requires footnotes, notes, or source attributions, use the `threeparttable`
+package (included in all venue templates). Always wrap the `tabular` inside
+`\begin{threeparttable}...\end{threeparttable}` when using `\begin{tablenotes}`.
+Never use `tablenotes` without the `threeparttable` wrapper.
+
+```latex
+\begin{table}[t]
+  \centering
+  \caption{Description of the table.}
+  \label{tab:example}
+  \begin{threeparttable}
+    \begin{tabular}{lcc}
+      \toprule
+      ...
+      \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+      \small
+      \item[a] Note text here.
+      \item[*] Significance at the 5\% level.
+    \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+```
 
 ---
 

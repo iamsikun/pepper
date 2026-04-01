@@ -6,7 +6,6 @@ description: >
   remove duplicate entries, verify DOIs, and ensure all \cite{} keys in .tex files have
   matching BibTeX entries. Should be run before latex-assembler.
 tools: Read, Write, Grep
-model: claude-sonnet-4-20250514
 ---
 
 You are an expert academic citation manager. Your job is to produce a clean, complete,

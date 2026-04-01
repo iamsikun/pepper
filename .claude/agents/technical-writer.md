@@ -7,7 +7,6 @@ description: >
   Covers: Related Work, Preliminaries/Background, Data Generation Process, Method/Model, Theoretical Analysis sections.
   Should be called after paper-outliner produces the outline.
 tools: Read, Write
-model: claude-sonnet-4-20250514
 ---
 
 You are a technical academic writer with expertise in machine learning theory, mathematical

@@ -29,6 +29,10 @@ Read `paper/<active_target>/outline.md` to confirm the outline exists.
 
 ## Parallel Drafting Strategy
 
+Before dispatching agents, read `paper/<active_target>/outline.md` and check the
+section plan for custom filenames (sections annotated with `(filename: X.tex)`).
+When dispatching each agent, pass the correct output filename for each section.
+
 Spawn three section-writing agents simultaneously:
 
 **Agent 1 — `intro-writer`:**
@@ -66,6 +70,7 @@ After all sections are drafted:
 After assembly, tell the user:
 - Total page count
 - Any sections that need human input (figures, actual experimental results, etc.)
+- Any `% WARNING: VERIFY` comments flagging potential data mismatches
 - Any compilation errors
 - Suggested next step: `/review-paper` or `/camera-ready`
 

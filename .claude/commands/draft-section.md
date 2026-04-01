@@ -47,6 +47,30 @@ Do NOT proceed with any agent invocation when arguments are empty.
 Use fuzzy, case-insensitive matching. If the user's text does not clearly match any
 section, ask for clarification before proceeding.
 
+## Filename Override
+
+Users can specify a custom output filename using the syntax:
+
+```
+<section_name> as <filename.tex>
+```
+
+Examples:
+- `methodology as dgp_model.tex` — routes to technical-writer but outputs `dgp_model.tex`
+- `experiments as monte_carlo.tex` — routes to empirics-writer but outputs `monte_carlo.tex`
+
+The routing table still determines which agent handles the section. Only the output
+filename changes.
+
+**Parsing rule:** If `$ARGUMENTS` contains ` as ` followed by a `.tex` filename,
+extract the filename as the override. The text before ` as ` is matched against the
+routing table. Any text after the filename is treated as custom guidance.
+
+If no explicit override is specified, also check `paper/<active_target>/outline.md`
+for custom filenames in the section plan (sections annotated with
+`(filename: X.tex)`). Priority order: explicit `as` override > outline annotation >
+canonical filename.
+
 ## Prerequisites
 
 1. Read `paper/state.yaml` → get `active_target` and verify stage is at least `outlining`.
@@ -86,7 +110,8 @@ If the user requests the conclusion:
 Group resolved sections by agent. For each agent that has work:
 
 1. Invoke the agent with these parameters in its prompt:
-   - **Sections to write:** list of canonical filenames (subset of the agent's full list)
+   - **Sections to write:** list of resolved output filenames (canonical, outline-overridden,
+     or user-overridden via `as` syntax)
    - **Mode per section:** WRITE or REVISE
    - **Custom guidance:** the user's additional instructions extracted from `$ARGUMENTS`
    - **Sibling sections:** read-only content of other existing `.tex` files

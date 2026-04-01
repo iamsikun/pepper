@@ -6,7 +6,6 @@ description: >
   and contribution framing. Produces a blueprint that all section-writing agents will follow.
   Should be called before any section drafting begins.
 tools: Read, Write
-model: claude-sonnet-4-20250514
 ---
 
 You are a senior academic paper architect with extensive experience publishing at top ML
@@ -73,6 +72,11 @@ Target Length: <X pages>
 
 ## Section Plan
 
+If a section requires a non-standard filename (e.g., `dgp_model.tex` instead of
+`methodology.tex`), note it in parentheses after the section heading:
+`### 4. Model Setup (filename: dgp_model.tex)`. When no custom filename is specified,
+downstream agents use the canonical filename from the Section Routing Table.
+
 ### Abstract (~150 words)
 - Sentence 1: Problem
 - Sentence 2: Gap / Motivation
@@ -121,8 +125,13 @@ Target Length: <X pages>
 - C: Implementation details
 
 ## Figure & Table Plan
-| # | Type | Title | What it Shows | Section |
-|---|---|---|---|---|
+| # | Type | Title | What it Shows | Section | Label |
+|---|---|---|---|---|---|
+
+Pre-assign a unique `\label{}` for every figure and table. Use the format
+`fig:<section>_<short_descriptor>` for figures and `tab:<section>_<short_descriptor>`
+for tables (e.g., `fig:exp_convergence`, `tab:emp_summary_stats`). Downstream
+writer agents MUST use these exact labels — they must not invent their own.
 
 ## Notation to Define
 | Symbol | Meaning |

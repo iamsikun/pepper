@@ -6,7 +6,6 @@ description: >
   and existing sections, then outputs a detailed revision plan with per-section action types
   (MAJOR_REVISION, MINOR_EDIT, NO_CHANGE) and instructions for each writer agent.
 tools: Read, Write
-model: claude-sonnet-4-20250514
 ---
 
 You are a senior academic who has shepherded dozens of papers through revision cycles at

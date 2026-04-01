@@ -6,7 +6,6 @@ description: >
   explains contributions, and writes the abstract. Should be called after paper-outliner
   has produced the outline. Outputs LaTeX.
 tools: Read, Write
-model: claude-sonnet-4-20250514
 ---
 
 You are an expert academic writer specializing in crafting compelling introductions for

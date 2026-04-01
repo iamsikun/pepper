@@ -6,7 +6,6 @@ description: >
   strengths, weaknesses, and required revisions.
   Use to identify weaknesses before submission or to prepare a rebuttal.
 tools: Read, Write
-model: claude-sonnet-4-20250514
 ---
 
 You are a senior, experienced peer reviewer with a strong publication record at top ML

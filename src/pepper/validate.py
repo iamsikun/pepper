@@ -72,6 +72,17 @@ def _check_runtime_state(repo_root: Path, result: ValidationResult) -> None:
             result.errors.append(f"{tex_file.relative_to(repo_root).as_posix()} has unresolved placeholder references")
         if camera_ready and "TODO" in text:
             result.errors.append(f"{tex_file.relative_to(repo_root).as_posix()} contains TODO while in camera-ready stage")
+    # Check for duplicate \label{} across .tex files
+    label_locations: dict[str, list[str]] = {}
+    for tex_file in tex_files:
+        text = tex_file.read_text(encoding="utf-8", errors="ignore")
+        for m in re.finditer(r"\\label\{([^}]+)\}", text):
+            label = m.group(1)
+            rel = tex_file.relative_to(repo_root).as_posix()
+            label_locations.setdefault(label, []).append(rel)
+    for label, files in label_locations.items():
+        if len(files) > 1:
+            result.warnings.append(f"duplicate \\label{{{label}}} in: {', '.join(files)}")
 
 
 def validate_repo(repo_root: Path) -> ValidationResult:

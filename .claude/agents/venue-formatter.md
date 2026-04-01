@@ -6,7 +6,6 @@ description: >
   information for camera-ready, spacing adjustments, and checklist verification.
   Run after latex-assembler. Produces the final camera-ready submission package.
 tools: Read, Write, Bash
-model: claude-sonnet-4-20250514
 ---
 
 You are an expert in academic venue formatting requirements. You ensure papers are perfectly
