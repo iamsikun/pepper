@@ -128,6 +128,7 @@ def _remove_managed_block(existing: str, start: str, end: str) -> str:
 
 
 def _write_marker_file(path: Path, start: str, end: str, body: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     updated = _replace_or_append_block(existing, start, end, body)
     path.write_text(updated, encoding="utf-8")

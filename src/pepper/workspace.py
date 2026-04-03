@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 import textwrap
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import yaml
@@ -305,8 +305,6 @@ def log_decision(repo_root: Path, text: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     if not path.exists():
         path.write_text(_SESSION_LOG_HEADER, encoding="utf-8")
-    from datetime import datetime
-
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     with path.open("a", encoding="utf-8") as f:
         f.write(f"- [{stamp}] {text}\n")
@@ -419,8 +417,13 @@ def write_workflow_brief(
                     all_lines = content.splitlines()
                     brief_text += f"```latex\n{content}\n```\n"
                     parts = lines.split("-", 1)
-                    start = int(parts[0]) - 1
-                    end = int(parts[1]) if len(parts) > 1 else start + 1
+                    try:
+                        start = int(parts[0]) - 1
+                        end = int(parts[1]) if len(parts) > 1 else start + 1
+                    except ValueError:
+                        start, end = 0, len(all_lines)
+                    start = max(0, start)
+                    end = max(start, end)
                     focus = "\n".join(
                         f"{i + 1:4d}  {line}"
                         for i, line in enumerate(all_lines[start:end], start=start)

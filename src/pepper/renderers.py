@@ -33,7 +33,7 @@ def normalize_adapters(adapters: str | list[str] | tuple[str, ...] | None) -> tu
     if isinstance(adapters, str):
         raw = [part.strip() for part in adapters.split(",")]
     else:
-        raw = [str(part).strip() for part in adapters]
+        raw = [part.strip() if isinstance(part, str) else "" for part in adapters]
     normalized = tuple(dict.fromkeys(part for part in raw if part))
     invalid = sorted(set(normalized) - set(SUPPORTED_ADAPTERS))
     if invalid:
@@ -59,7 +59,7 @@ def _format_capabilities(spec: RoleSpec) -> str:
 
 
 def render_claude_role(spec: RoleSpec) -> str:
-    tools = ", ".join(_claude_tools_for_role(spec))
+    tools = ", ".join(_claude_tools_for_role(spec)) or "Read"
     return f"""---
 name: {spec.slug}
 description: >

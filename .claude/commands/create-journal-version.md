@@ -19,7 +19,7 @@ Create a journal target alongside the conference target.
 
 ## Role Steps
 
-- paper-outliner when bootstrap help is needed
+- paper-outliner
 
 ## Implementation Guidance
 

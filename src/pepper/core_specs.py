@@ -249,7 +249,7 @@ venue, and paper type. The CLI owns source-map generation and state-file writes.
             "create the target workspace and import notes",
             "copy or split source materials into the Pepper runtime layout",
         ),
-        role_steps=("paper-outliner in retrospective mode",),
+        role_steps=("paper-outliner",),
         instructions="""The CLI handles file discovery, copying, and basic structure inference.
 Use the outliner only after files are imported to reconstruct the current narrative.""",
     ),
@@ -333,7 +333,7 @@ the required writers, then run deterministic assembly and bookkeeping.""",
             "create the journal target structure and metadata",
             "optionally activate the journal target",
         ),
-        role_steps=("paper-outliner when bootstrap help is needed",),
+        role_steps=("paper-outliner",),
         instructions="""The CLI owns the target creation. The outliner is only used when the user
 wants a bootstrap outline derived from the conference structure.""",
     ),

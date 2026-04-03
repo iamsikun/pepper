@@ -14,7 +14,7 @@ Ingest an existing LaTeX project into the Pepper workspace.
 
 ## Role Steps
 
-- paper-outliner in retrospective mode
+- paper-outliner
 
 ## Guidance
 

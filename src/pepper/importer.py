@@ -138,7 +138,10 @@ def import_paper(
             filename = _section_filename(title_text, str(target["audience"]))
             if filename in seen:
                 stem = Path(filename).stem
-                filename = f"{stem}_{len(seen) + 1}.tex"
+                counter = 1
+                while f"{stem}_{counter}.tex" in seen:
+                    counter += 1
+                filename = f"{stem}_{counter}.tex"
             seen.add(filename)
             (sections_root / filename).write_text(body, encoding="utf-8")
 
