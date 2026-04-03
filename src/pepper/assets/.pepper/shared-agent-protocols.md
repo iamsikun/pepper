@@ -17,7 +17,7 @@ All agents resolve their working context through these steps:
 
 ## Selective Section Mode Protocol
 
-When invoked by `/draft-section`, the orchestrator specifies:
+When invoked by the `draft-section` workflow, the orchestrator specifies:
 - **Sections to write:** a subset of the agent's file list — write ONLY these
 - **Custom guidance:** additional user instructions — follow these as priority directives
   that override default emphasis, scope, and style choices (but not correctness rules)
@@ -27,7 +27,8 @@ If the target section file already exists on disk, operate in **revise mode**: r
 existing content first, preserve what works, and improve or restructure as directed by
 the custom guidance. If the file does not exist, write from scratch using the outline.
 
-If no selective section parameters are provided (i.e., invoked by `/draft-paper`),
+If no selective section parameters are provided (for example when invoked by the
+full-paper drafting workflow),
 write all sections listed in the agent's file list.
 
 ---
@@ -35,7 +36,7 @@ write all sections listed in the agent's file list.
 ## Revision Mode Protocol
 
 When `paper/<active_target>/revisions/round-<N>/revision-plan.md` exists and the agent is
-invoked by `/revise-paper` or `/update-results`, operate in revision mode:
+invoked by the `revise-paper` workflow, operate in revision mode:
 
 1. **Read existing:** Always read the EXISTING `.tex` files first — never start from scratch
 2. **Scope:** Only change what the revision plan specifies for this agent. Do not rewrite
@@ -48,3 +49,18 @@ invoked by `/revise-paper` or `/update-results`, operate in revision mode:
 
 Each writer agent may have additional agent-specific revision rules (e.g., updating tables,
 propagating assumption changes). Follow those in addition to the rules above.
+
+---
+
+## Context Verification Protocol
+
+Before writing or editing any content, output a brief context summary to confirm correct
+resolution:
+
+- **Active target:** (target name and stage from state.yaml)
+- **Session decisions:** (count of entries, or "none" if session-log.md is missing/empty)
+- **Section file:** (path and line count of the section being edited, if applicable)
+- **Sibling sections:** (list of sibling .tex files with their labels)
+
+This summary confirms the agent resolved all context files before proceeding. If any
+required file is missing, note the gap and proceed with available information.

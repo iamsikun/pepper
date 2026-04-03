@@ -1,263 +1,199 @@
 # Academic Paper Writing System
 
-An installable Claude Code subagent system for writing camera-ready academic papers in
-**machine learning**, **marketing**, **economics**, and **operations research**.
+Pepper is an installable CLI scaffold for writing camera-ready academic papers in
+machine learning, economics, marketing, operations research, and quant finance.
 
-Supports ML conferences and economics/marketing/operations journals.
-
----
+The core workflow is agent-neutral. Claude Code and Codex are generated adapters
+over the same Pepper workflow and role definitions.
 
 ## Installation
 
-Pepper is a CLI tool, not a library. Install it once and use it across all your research repos.
+Install Pepper once as a CLI tool:
 
 ```bash
-# Install as a global CLI tool (one-time)
-uv tool install git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.1.0
+uv tool install git+ssh://git@github.com/<you>/pepper.git --tag v0.1.0
+```
 
-# Or, for local development (editable — changes take effect immediately):
+Or for local development:
+
+```bash
 uv tool install -e /path/to/pepper
 ```
 
-Then in any research repo:
+Then scaffold any research repo:
 
 ```bash
-pepper install
+pepper install --adapters claude,codex
 ```
 
-Upgrade later:
+## Canonical Interface
+
+Pepper is CLI-first. These commands are the stable workflow entrypoints:
 
 ```bash
-# Upgrade to latest
-uv tool upgrade pepper
+# Paper setup
+pepper new-paper
+pepper import-paper
+pepper set-target
+pepper create-journal-version
 
-# Or reinstall a specific tag:
-uv tool install git+ssh://git@github.com/<you>/<pepper-private-repo>.git --tag v0.2.0 --force
+# Writing workflows
+pepper literature-search
+pepper draft-paper
+pepper draft-section
+pepper edit-section
+pepper review-paper
+pepper revise-paper
+pepper polish
 
-# Then sync each project:
-pepper sync
+# Assembly
+pepper assemble
+pepper camera-ready
+
+# Session state
+pepper log-decision "removed tier analysis"
+pepper clear-session
+pepper sync-context
 ```
 
----
+Deterministic repo and state changes happen in the CLI. Judgment-heavy tasks such
+as literature synthesis, outlining, drafting, review, and revision planning are
+described in generated runtime briefs and role guides.
 
-## Quick Start
+### Session Decisions Log
 
-### Writing from scratch
+Editorial decisions persist across agent calls via a session log. This eliminates
+the need to re-state decisions like "we removed tiers" in every prompt:
 
 ```bash
-# Open Claude Code in your project repo
-claude
-
-# 1. Initialize paper workspace (scans your repo, builds source map)
-/new-paper
-
-# 2. Run literature search
-/literature-search
-
-# 3. Draft the full paper
-/draft-paper
-
-# 4. Get peer review feedback
-/review-paper
-
-# 5. Revise based on feedback (iterative)
-/revise-paper
-
-# 6. Produce camera-ready submission
-/camera-ready
+pepper log-decision "use stratified sampling, not cluster"
+pepper log-decision "renamed DGP 1-4 to descriptive names"
+pepper clear-session   # reset between sessions
 ```
 
-### Importing an existing paper
+Session decisions are automatically included in workflow briefs and referenced by
+all agents via `paper/shared/session-log.md`.
+
+### Section Editing
+
+The `edit-section` and `draft-section` commands support targeted editing:
 
 ```bash
-claude
-
-# 1. Import your existing .tex/.bib files into the pipeline
-/import-paper
-
-# 2. Choose an import mode:
-#    - Review:   get feedback on your draft      → /review-paper
-#    - Revise:   restructure/rewrite sections     → edit outline, then /draft-paper
-#    - Retarget: adapt for a different venue       → /create-journal-version
+pepper edit-section "strengthen motivation" --section introduction
+pepper edit-section "fix wording" --section methodology --lines 15-30
+pepper draft-section "write the DGP section" --section dgp_model
 ```
 
----
+Workflow briefs embed the current section content, sibling section labels, and
+session decisions so agents have full context without manual prompting.
 
-## System Architecture
+## Adapter Outputs
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                       ORCHESTRATION LAYER                        │
-│  /new-paper → /literature-search → /draft-paper → /camera-ready   │
-│  /import-paper ──────────────────↗ /revise-paper, /update-results │
-└──────────────────────────────────────────────────────────────────┘
-         │               │                │              │
-         ▼               ▼                ▼              ▼
-  ┌──────────┐   ┌──────────────┐  ┌──────────┐  ┌──────────┐
-  │literature│   │paper-outliner│  │  intro-  │  │  venue-  │
-  │-reviewer │   │              │  │  writer  │  │formatter │
-  └──────────┘   └──────────────┘  └──────────┘  └──────────┘
-                                   ┌──────────┐  ┌──────────┐
-                                   │technical-│  │  latex-  │
-                                   │  writer  │  │assembler │
-                                   └──────────┘  └──────────┘
-                                   ┌──────────┐  ┌──────────┐
-                                   │empirics- │  │   peer-  │
-                                   │  writer  │  │reviewer  │
-                                   └──────────┘  └──────────┘
-                                   ┌──────────┐
-                                   │ citation-│
-                                   │ manager  │
-                                   └──────────┘
-                                   ┌──────────┐
-                                   │revision- │
-                                   │ planner  │
-                                   └──────────┘
+`pepper install --adapters claude,codex` materializes:
+
+```text
+your-project/
+├── .claude/
+│   ├── agents/
+│   ├── commands/
+│   └── settings.json
+├── .pepper/
+│   ├── adapters/
+│   │   └── codex/
+│   │       ├── roles/
+│   │       └── workflows/
+│   ├── config.yaml
+│   ├── shared-agent-protocols.md
+│   ├── templates/
+│   └── writing-style.md
+├── AGENTS.md
+└── CLAUDE.md
 ```
 
----
+Runtime paper state lives under `paper/` and should be committed:
 
-## Agents
+```text
+paper/
+├── state.yaml
+├── shared/
+│   ├── context.md
+│   ├── session-log.md
+│   ├── claims.md
+│   ├── literature/
+│   ├── references-master.bib
+│   ├── figure-plan.md
+│   └── table-plan.md
+├── conference/
+└── journal/
+```
 
-| Agent | Writes | When to Use |
-|---|---|---|
-| `literature-reviewer` | `paper/shared/literature/*.md`, BibTeX | Finding related work |
-| `paper-outliner` | `paper/<target>/outline.md` | Structuring the paper |
-| `intro-writer` | `abstract.tex`, `introduction.tex` | After outline is done |
-| `technical-writer` | `related_work.tex`, `methodology.tex`, `appendix_proofs.tex` | Core technical content |
-| `empirics-writer` | `experiments.tex` / `empirics.tex` | Results and experiments |
-| `citation-manager` | `paper/<target>/references.bib` | Before assembly |
-| `latex-assembler` | `paper/<target>/main.tex` | Final assembly |
-| `venue-formatter` | `paper/<target>/camera-ready/` | Submission formatting |
-| `peer-reviewer` | `paper/<target>/review.md`, `revision-plan.md` | Quality check |
-| `revision-planner` | `paper/<target>/revisions/round-N/revision-plan.md` | Planning revisions from feedback or results changes |
+## Typical Flow
 
----
+Initialize a paper:
 
-## Commands
+```bash
+pepper new-paper \
+  --title "Optimal Pricing with LLMs" \
+  --topic "Dynamic pricing with language-model-assisted demand inference." \
+  --contribution "A new demand estimator" \
+  --contribution "A policy regret bound" \
+  --venue neurips \
+  --paper-type "Theory+Experiments"
+```
 
-| Command | Purpose |
-|---|---|
-| `/new-paper` | Scan repo, build source map, initialize paper workspace |
-| `/import-paper` | Import an existing `.tex`/`.bib` paper into the pipeline |
-| `/literature-search` | Run literature search + invoke outliner |
-| `/draft-paper` | Draft all sections in parallel + assemble |
-| `/review-paper` | Run peer reviewer on active target |
-| `/revise-paper` | Revise paper based on review feedback |
-| `/update-results` | Update paper after results/data change |
-| `/camera-ready` | Final formatting + submission package |
-| `/set-target` | Switch active target (conference/journal) |
-| `/create-journal-version` | Bootstrap journal version from shared materials |
+Prepare a literature-search brief for the runtime adapter:
 
----
+```bash
+pepper literature-search --guidance "Focus on dynamic pricing and causal demand estimation."
+```
+
+Assemble the current manuscript deterministically:
+
+```bash
+pepper assemble
+```
+
+Create the camera-ready package:
+
+```bash
+pepper camera-ready
+```
 
 ## Supported Venues
 
-Venue definitions live in `.pepper/config.yaml`. Each venue has a LaTeX template in `.pepper/templates/<venue>/`.
+Venue definitions live in `.pepper/config.yaml`. Venue template shells and manifests
+live in `.pepper/templates/<venue>/`.
 
-> **Note:** Download official `.sty`/`.cls` files from each venue's website and place them in `.pepper/templates/<venue>/`. These files cannot be distributed due to copyright.
+Official `.sty` and `.cls` files are not distributed. Download them from the venue and
+place them in the matching template directory before final compilation.
 
----
+## Development Notes
 
-## File Structure
+- Source of truth lives under `src/pepper/`
+- Root `.claude/`, `.pepper/`, `CLAUDE.md`, and `AGENTS.md` are generated mirrors
+- Use `pepper dev-sync-root` in this repository to refresh the checked-in root mirror
 
-### Scaffold files (installed into your project)
+### Syncing changes to project repos
 
-```
-your-project/
-├── .claude/
-│   ├── agents/                  ← 10 specialized subagent prompts
-│   ├── commands/                ← slash command prompts
-│   └── settings.json            ← tool permissions
-├── .pepper/
-│   ├── config.yaml              ← system defaults (venue registry, stages)
-│   ├── templates/               ← venue-specific LaTeX templates (one dir per venue)
-│   └── scripts/
-│       ├── install.sh           ← installer script
-│       └── validate.sh          ← validation script
-└── CLAUDE.md                    ← system instructions for Claude Code
+Install pepper in editable mode so source changes are picked up immediately:
+
+```bash
+uv tool install -e /path/to/pepper --force
 ```
 
-### Runtime files (created by `/new-paper` or `/import-paper`)
+Then sync any project repo:
 
-```
-your-project/
-└── paper/
-    ├── state.yaml               ← active target + per-target stages
-    ├── shared/
-    │   ├── context.md           ← title, topic, contributions, source map
-    │   ├── claims.md            ← research claims and evidence links
-    │   ├── literature/          ← survey markdown files
-    │   ├── references-master.bib
-    │   ├── figure-plan.md
-    │   ├── table-plan.md
-    │   └── evidence/
-    ├── conference/              ← conference target
-    │   ├── target.yaml
-    │   ├── outline.md
-    │   ├── sections/
-    │   ├── figures/
-    │   ├── references.bib
-    │   ├── main.tex
-    │   ├── revisions/          ← revision history
-    │   │   └── round-N/
-    │   │       ├── review-input.md
-    │   │       ├── revision-plan.md
-    │   │       ├── changelog.md
-    │   │       └── sections-before/
-    │   └── camera-ready/
-    └── journal/                 ← (optional) journal target
-        └── [same structure]
+```bash
+cd /path/to/project && pepper sync
 ```
 
----
-
-## Workflow
-
-### Phase 1: Setup
-`/new-paper` scans your repo, discovers project materials, and writes a source map so all agents know where to find things.
-
-**Alternative:** `/import-paper` ingests an existing LaTeX paper into the `paper/` structure. It decomposes sections, copies bibliography and figures, and enters the pipeline mid-stream (at `drafting` for review/retarget, or `outlining` for restructuring).
-
-### Phase 2: Research
-`/literature-search` spawns parallel literature-reviewer agents, consolidates bibliography, then invokes paper-outliner.
-
-### Phase 3: Drafting (parallel)
-`/draft-paper` spawns intro-writer, technical-writer, and empirics-writer in parallel. Then runs citation-manager and latex-assembler sequentially.
-
-### Phase 4: Quality Check
-`/review-paper` runs the peer-reviewer agent and produces a review + revision plan.
-
-### Phase 5: Revision (iterative)
-`/revise-paper` takes review feedback, generates a structured revision plan via the revision-planner agent, selectively re-invokes writer agents, and re-assembles the paper. Each round is preserved in `paper/<target>/revisions/round-N/`.
-
-`/update-results` is a lighter variant for when experimental results or data change — same flow but focused on propagating content changes rather than addressing reviewer criticism.
-
-Both commands support multiple rounds and can be repeated as needed.
-
-### Phase 6: Camera-Ready
-`/camera-ready` runs final citation check, venue formatting, compilation, and produces a submission package.
-
----
-
-## Multi-Target Support
-
-One project can have up to two publication targets: conference and journal. They share research materials (`paper/shared/`) but maintain separate prose and builds.
-
-- `/create-journal-version` — bootstrap a journal version
-- `/set-target` — switch active target
-
----
+No `--reinstall` or `--force` needed after editable install. Changes to
+`core_specs.py`, `renderers.py`, or static assets are reflected on the next
+`pepper sync`.
 
 ## Prerequisites
 
-- [`uv`](https://docs.astral.sh/uv/) for installing pepper as a CLI tool
-- Claude Code installed and running
-- LaTeX distribution (TeX Live or MiKTeX) for compilation
-- Venue style files downloaded (see `.pepper/templates/` for which files are needed)
-
----
-
-## Version
-
-System v3.0 — Global CLI tool, project-local scaffold.
+- [`uv`](https://docs.astral.sh/uv/)
+- Claude Code and/or Codex if you want generated runtime adapters
+- A LaTeX distribution for compilation
+- Venue style files copied into `.pepper/templates/<venue>/`

@@ -8,15 +8,15 @@ from pathlib import Path
 from typing import Iterable
 
 from .manifest import InstallManifest
+from .renderers import CORE_SCOPE, DEFAULT_ADAPTERS, managed_files_by_scope, normalize_adapters, rendered_adapter_assets, rendered_marker_files
 
 PACKAGE_NAME = "pepper"
 SCAFFOLD_DIR = ".pepper"
-CLAUDE_START = "<!-- pepper:start -->"
-CLAUDE_END = "<!-- pepper:end -->"
+MARKER_START = "<!-- pepper:start -->"
+MARKER_END = "<!-- pepper:end -->"
 GITIGNORE_START = "# pepper:start"
 GITIGNORE_END = "# pepper:end"
 MANIFEST_PATH = Path(f"{SCAFFOLD_DIR}/install-manifest.json")
-CLAUDE_TEMPLATE_NAME = "CLAUDE.template.md"
 EXCLUDED_ASSET_SUFFIXES = {
     ".DS_Store",
     "settings.local.json",
@@ -24,6 +24,10 @@ EXCLUDED_ASSET_SUFFIXES = {
     "validate.sh",
     "neurips.sty",
 }
+EXCLUDED_ASSET_PREFIXES = (
+    ".claude/",
+    "CLAUDE.template.md",
+)
 ROOT_EXTRA_KEEP = {
     ".claude/settings.local.json",
     f"{SCAFFOLD_DIR}/scripts/install.sh",
@@ -70,10 +74,10 @@ def _walk_resources(node, prefix: str = "") -> dict[str, bytes]:
     assets: dict[str, bytes] = {}
     for child in sorted(node.iterdir(), key=lambda item: item.name):
         relative = f"{prefix}/{child.name}" if prefix else child.name
+        if any(relative == excluded or relative.startswith(excluded) for excluded in EXCLUDED_ASSET_PREFIXES):
+            continue
         if child.is_dir():
             assets.update(_walk_resources(child, relative))
-            continue
-        if relative == CLAUDE_TEMPLATE_NAME:
             continue
         if any(relative.endswith(suffix) for suffix in EXCLUDED_ASSET_SUFFIXES):
             continue
@@ -81,14 +85,16 @@ def _walk_resources(node, prefix: str = "") -> dict[str, bytes]:
     return assets
 
 
-def asset_bytes_by_path() -> dict[str, bytes]:
+def static_asset_bytes_by_path() -> dict[str, bytes]:
     root = files(PACKAGE_NAME).joinpath("assets")
     return _walk_resources(root)
 
 
-def claude_template_text() -> str:
-    template = files(PACKAGE_NAME).joinpath("assets").joinpath(CLAUDE_TEMPLATE_NAME)
-    return template.read_text(encoding="utf-8").rstrip() + "\n"
+def asset_bytes_by_path(adapters: str | list[str] | tuple[str, ...] | None = None) -> dict[str, bytes]:
+    normalized = normalize_adapters(adapters)
+    assets = static_asset_bytes_by_path()
+    assets.update(rendered_adapter_assets(normalized))
+    return assets
 
 
 def hash_bytes(data: bytes) -> str:
@@ -112,14 +118,39 @@ def _replace_or_append_block(existing: str, start: str, end: str, body: str) -> 
     return existing.rstrip() + "\n\n" + block
 
 
+def _remove_managed_block(existing: str, start: str, end: str) -> str:
+    if start not in existing or end not in existing:
+        return existing
+    before, remainder = existing.split(start, 1)
+    _, after = remainder.split(end, 1)
+    cleaned = (before.rstrip("\n") + "\n\n" + after.lstrip("\n")).strip()
+    return cleaned + ("\n" if cleaned else "")
+
+
 def _write_marker_file(path: Path, start: str, end: str, body: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     updated = _replace_or_append_block(existing, start, end, body)
     path.write_text(updated, encoding="utf-8")
 
 
-def _ensure_marker_files(repo_root: Path) -> None:
-    _write_marker_file(repo_root / "CLAUDE.md", CLAUDE_START, CLAUDE_END, claude_template_text())
+def _remove_marker_file_block(path: Path, start: str, end: str) -> None:
+    if not path.exists():
+        return
+    existing = path.read_text(encoding="utf-8")
+    updated = _remove_managed_block(existing, start, end)
+    if updated:
+        path.write_text(updated, encoding="utf-8")
+    else:
+        path.unlink()
+
+
+def _ensure_marker_files(repo_root: Path, adapters: tuple[str, ...]) -> None:
+    marker_files = rendered_marker_files(adapters)
+    for relative, body in marker_files.items():
+        _write_marker_file(repo_root / relative, MARKER_START, MARKER_END, body)
+    for obsolete in {"CLAUDE.md", "AGENTS.md"} - set(marker_files):
+        _remove_marker_file_block(repo_root / obsolete, MARKER_START, MARKER_END)
     _write_marker_file(repo_root / ".gitignore", GITIGNORE_START, GITIGNORE_END, "\n".join(GITIGNORE_LINES))
 
 
@@ -131,8 +162,15 @@ def _prune_empty_dirs(directory: Path, stop: Path) -> None:
         current = parent
 
 
-def install_or_sync(repo_root: Path, *, force: bool = False, write_manifest: bool = True) -> SyncResult:
-    assets = asset_bytes_by_path()
+def install_or_sync(
+    repo_root: Path,
+    *,
+    force: bool = False,
+    write_manifest: bool = True,
+    adapters: str | list[str] | tuple[str, ...] | None = None,
+) -> SyncResult:
+    normalized_adapters = normalize_adapters(adapters)
+    assets = asset_bytes_by_path(normalized_adapters)
     manifest_path = repo_root / MANIFEST_PATH
     existing_manifest = InstallManifest.load(manifest_path)
     conflicts: list[str] = []
@@ -188,9 +226,14 @@ def install_or_sync(repo_root: Path, *, force: bool = False, write_manifest: boo
             written_files.append(relative_path)
             _prune_empty_dirs(destination.parent, repo_root)
 
-    _ensure_marker_files(repo_root)
+    _ensure_marker_files(repo_root, normalized_adapters)
     if write_manifest:
-        InstallManifest.create(package_version(), hashes).save(manifest_path)
+        InstallManifest.create(
+            package_version(),
+            adapters=list(normalized_adapters),
+            managed_files_by_scope=managed_files_by_scope(normalized_adapters, list(assets)),
+            hashes=hashes,
+        ).save(manifest_path)
     return SyncResult(written_files=written_files, conflicts=[])
 
 
@@ -202,9 +245,10 @@ def _iter_root_managed_files(repo_root: Path) -> Iterable[Path]:
         yield from (path for path in root.rglob("*") if path.is_file())
 
 
-def dev_sync_root(repo_root: Path) -> SyncResult:
-    result = install_or_sync(repo_root, force=True, write_manifest=False)
-    managed_files = set(asset_bytes_by_path())
+def dev_sync_root(repo_root: Path, *, adapters: str | list[str] | tuple[str, ...] | None = None) -> SyncResult:
+    normalized_adapters = normalize_adapters(adapters)
+    result = install_or_sync(repo_root, force=True, write_manifest=False, adapters=normalized_adapters)
+    managed_files = set(asset_bytes_by_path(normalized_adapters))
     for path in _iter_root_managed_files(repo_root):
         relative = path.relative_to(repo_root).as_posix()
         if relative in managed_files or relative in ROOT_EXTRA_KEEP:
