@@ -17,11 +17,13 @@ preferred local files.
 - `pepper literature-search`
 - `pepper draft-paper`
 - `pepper draft-section`
+- `pepper edit-section`
 - `pepper review-paper`
 - `pepper revise-paper`
 - `pepper set-target`
 - `pepper create-journal-version`
 - `pepper assemble`
+- `pepper polish`
 - `pepper camera-ready`
 
 ## Context Resolution
@@ -52,5 +54,6 @@ When a workflow requires deterministic repository changes, prefer the CLI over a
 - `.pepper/writing-style.md`
 - `paper/state.yaml`
 - `paper/shared/context.md`
+- `paper/shared/session-log.md`
 - `paper/<active_target>/target.yaml`
 <!-- pepper:end -->

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 
 CORE_REFERENCE_FILES = (
@@ -9,6 +10,7 @@ CORE_REFERENCE_FILES = (
     ".pepper/writing-style.md",
     "paper/state.yaml",
     "paper/shared/context.md",
+    "paper/shared/session-log.md",
     "paper/<active_target>/target.yaml",
 )
 
@@ -28,11 +30,13 @@ preferred local files.
 - `pepper literature-search`
 - `pepper draft-paper`
 - `pepper draft-section`
+- `pepper edit-section`
 - `pepper review-paper`
 - `pepper revise-paper`
 - `pepper set-target`
 - `pepper create-journal-version`
 - `pepper assemble`
+- `pepper polish`
 - `pepper camera-ready`
 
 ## Context Resolution
@@ -188,6 +192,37 @@ prioritize correctness, novelty positioning, and evidence quality.""",
 Produce a per-section action map with explicit agent ownership, minimal scope, prerequisites, and
 cross-section consistency notes. Every review comment must be mapped or explicitly rejected.""",
     ),
+    RoleSpec(
+        slug="copyeditor",
+        summary="Sentence-level polish: grammar, clarity, flow, and style compliance without changing content.",
+        capabilities=("read_files", "write_files"),
+        outputs=("paper/<active_target>/sections/*.tex",),
+        instructions="""Read each section file and apply four editing passes in order:
+
+1. Grammar and mechanics — subject-verb agreement, tense consistency, article usage,
+   punctuation (comma splices, missing hyphens), spelling, and common academic
+   malapropisms.
+
+2. Clarity — flag and fix ambiguous referents ("this", "it" without clear antecedent),
+   excessive nominalization ("perform the computation of" to "compute"), and overly
+   long sentences (40+ words) that should be split.
+
+3. Flow and transitions — fix consecutive sentences that repeat the same
+   subject or structure, abrupt paragraph transitions, and logical connectors that
+   do not match the actual relationship ("however" with no contrast).
+
+4. Style compliance — enforce `.pepper/writing-style.md` rules (no em-dashes,
+   citation style with citet/citep, notation consistency, American/British English
+   consistency, "Figure" vs "Fig." consistency).
+
+Hard constraints:
+- Do NOT restructure, reorder, or remove paragraphs.
+- Do NOT change technical claims, arguments, or math.
+- Do NOT touch content inside equation, align, algorithm, or other math environments;
+  only edit the surrounding prose.
+- Preserve all \\label{}, \\ref{}, \\cite{}, \\citet{}, and \\citep{} commands exactly.
+- Add a `% POLISHED` LaTeX comment at the top of each edited section for traceability.""",
+    ),
 )
 
 
@@ -245,6 +280,21 @@ be invoked after section files and bibliography are ready.""",
         role_steps=("intro-writer", "technical-writer", "empirics-writer"),
         instructions="""Section routing, filename overrides, and sibling-context collection are
 deterministic. Role invocation is only for the actual prose generation.""",
+    ),
+    WorkflowSpec(
+        slug="edit-section",
+        summary="Apply surgical edits to specific sections without rewriting unaffected content.",
+        cli_command="pepper edit-section",
+        deterministic_steps=(
+            "resolve the target section file and verify it exists on disk",
+            "collect sibling section labels for cross-reference context",
+        ),
+        role_steps=("intro-writer", "technical-writer", "empirics-writer"),
+        instructions="""This workflow uses the Edit Mode Protocol from shared-agent-protocols.md.
+The user specifies a section file and edit instructions (e.g., line range, paragraph description,
+or specific change request). The agent must read the entire file, apply ONLY the requested
+changes, and leave all other content byte-identical. Never rewrite paragraphs that are not
+mentioned in the edit instructions.""",
     ),
     WorkflowSpec(
         slug="review-paper",
@@ -313,6 +363,20 @@ execution but keep manuscript generation itself in the CLI.""",
         instructions="""Formatting checks may be aided by a role runtime, but packaging, copying,
 and state updates are deterministic CLI work.""",
     ),
+    WorkflowSpec(
+        slug="polish",
+        summary="Copyedit sections for grammar, clarity, and flow without changing content.",
+        cli_command="pepper polish",
+        deterministic_steps=(
+            "resolve target manuscript and section list",
+            "back up current sections before edits",
+        ),
+        role_steps=("copyeditor",),
+        instructions="""Back up sections before editing. Run the copyeditor on each requested
+section. After all edits, do the mandatory post-writing review from writing-style.md:
+re-read the full paper to verify internal consistency (notation, terminology, cross-references)
+was not broken by the edits.""",
+    ),
 )
 
 
@@ -322,3 +386,22 @@ def role_map() -> dict[str, RoleSpec]:
 
 def workflow_map() -> dict[str, WorkflowSpec]:
     return {spec.slug: spec for spec in WORKFLOW_SPECS}
+
+
+# -- External instructions resolution -----------------------------------------
+
+_INSTRUCTIONS_ROOT = Path(__file__).parent / "instructions"
+
+
+def resolve_role_instructions(spec: RoleSpec) -> str:
+    path = _INSTRUCTIONS_ROOT / "roles" / f"{spec.slug}.md"
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
+    return spec.instructions
+
+
+def resolve_workflow_instructions(spec: WorkflowSpec) -> str:
+    path = _INSTRUCTIONS_ROOT / "workflows" / f"{spec.slug}.md"
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
+    return spec.instructions

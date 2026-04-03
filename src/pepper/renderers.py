@@ -3,7 +3,16 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 
-from .core_specs import CORE_REFERENCE_FILES, ROLE_SPECS, SYSTEM_OVERVIEW, WORKFLOW_SPECS, RoleSpec, WorkflowSpec
+from .core_specs import (
+    CORE_REFERENCE_FILES,
+    ROLE_SPECS,
+    SYSTEM_OVERVIEW,
+    WORKFLOW_SPECS,
+    RoleSpec,
+    WorkflowSpec,
+    resolve_role_instructions,
+    resolve_workflow_instructions,
+)
 
 SUPPORTED_ADAPTERS = ("claude", "codex")
 DEFAULT_ADAPTERS = SUPPORTED_ADAPTERS
@@ -60,7 +69,7 @@ tools: {tools}
 
 You are the `{spec.slug}` role in the Pepper academic paper writing system.
 
-{spec.instructions}
+{resolve_role_instructions(spec)}
 
 ## Expected Outputs
 
@@ -93,7 +102,7 @@ def render_codex_role(spec: RoleSpec) -> str:
 
 ## Instructions
 
-{spec.instructions}
+{resolve_role_instructions(spec)}
 
 Use the canonical Pepper CLI workflows whenever deterministic repo or state changes are needed.
 """
@@ -105,7 +114,40 @@ def _format_workflow_steps(items: tuple[str, ...]) -> str:
     return "\n".join(f"- {item}" for item in items)
 
 
+_BRIEF_FIRST_WORKFLOWS = frozenset({"draft-section", "edit-section", "polish", "revise-paper"})
+
+
 def render_claude_workflow(spec: WorkflowSpec) -> str:
+    if spec.slug in _BRIEF_FIRST_WORKFLOWS:
+        return f"""# /{spec.slug}
+
+Canonical entrypoint: `{spec.cli_command}`
+
+## What This Does
+
+{spec.summary}
+
+## How to Execute
+
+1. Run: `pepper workflow-brief {spec.slug} --guidance "$ARGUMENTS"` to generate a self-contained brief.
+2. Read the generated brief at `.pepper/runtime-briefs/{spec.slug}.md`.
+3. Follow the brief's instructions using the embedded section content and session decisions as context.
+
+The brief includes current file content, sibling section labels, and session decisions automatically.
+Use `$ARGUMENTS` to pass freeform user guidance (e.g., section name, edit instructions).
+
+## Deterministic Steps
+
+{_format_workflow_steps(spec.deterministic_steps)}
+
+## Role Steps
+
+{_format_workflow_steps(spec.role_steps)}
+
+## Implementation Guidance
+
+{resolve_workflow_instructions(spec)}
+"""
     return f"""# /{spec.slug}
 
 Canonical entrypoint: `{spec.cli_command}`
@@ -130,7 +172,7 @@ Canonical entrypoint: `{spec.cli_command}`
 
 ## Implementation Guidance
 
-{spec.instructions}
+{resolve_workflow_instructions(spec)}
 """
 
 
@@ -153,7 +195,7 @@ Canonical entrypoint: `{spec.cli_command}`
 
 ## Guidance
 
-{spec.instructions}
+{resolve_workflow_instructions(spec)}
 
 In Codex, prefer running the CLI first and use role prompts only for literature synthesis,
 outlining, drafting, review, or revision planning.

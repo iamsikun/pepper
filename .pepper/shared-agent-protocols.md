@@ -49,3 +49,18 @@ invoked by the `revise-paper` workflow, operate in revision mode:
 
 Each writer agent may have additional agent-specific revision rules (e.g., updating tables,
 propagating assumption changes). Follow those in addition to the rules above.
+
+---
+
+## Context Verification Protocol
+
+Before writing or editing any content, output a brief context summary to confirm correct
+resolution:
+
+- **Active target:** (target name and stage from state.yaml)
+- **Session decisions:** (count of entries, or "none" if session-log.md is missing/empty)
+- **Section file:** (path and line count of the section being edited, if applicable)
+- **Sibling sections:** (list of sibling .tex files with their labels)
+
+This summary confirms the agent resolved all context files before proceeding. If any
+required file is missing, note the gap and proceed with available information.

@@ -6,11 +6,14 @@ Canonical entrypoint: `pepper revise-paper`
 
 Plan and apply revisions from feedback or updated results.
 
-## Runtime Notes
+## How to Execute
 
-- Use `$ARGUMENTS` as optional freeform user guidance when the command is invoked from Claude.
-- Keep deterministic filesystem and state updates in the CLI whenever Pepper exposes them.
-- Invoke only the roles needed for the judgment-heavy parts of the workflow.
+1. Run: `pepper workflow-brief revise-paper --guidance "$ARGUMENTS"` to generate a self-contained brief.
+2. Read the generated brief at `.pepper/runtime-briefs/revise-paper.md`.
+3. Follow the brief's instructions using the embedded section content and session decisions as context.
+
+The brief includes current file content, sibling section labels, and session decisions automatically.
+Use `$ARGUMENTS` to pass freeform user guidance (e.g., section name, edit instructions).
 
 ## Deterministic Steps
 

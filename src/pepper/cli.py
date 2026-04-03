@@ -5,7 +5,9 @@ import sys
 from pathlib import Path
 
 from .manifest import InstallManifest
-from .project import assemble_paper, camera_ready, create_journal_version, import_paper, new_paper, set_target, write_workflow_brief
+from .assembly import assemble_paper, camera_ready
+from .importer import import_paper
+from .workspace import clear_session, create_journal_version, log_decision, new_paper, set_target, sync_context, write_workflow_brief
 from .renderers import DEFAULT_ADAPTERS
 from .sync import MANIFEST_PATH, dev_sync_root, find_repo_root, install_or_sync, package_version
 from .validate import validate_repo
@@ -159,10 +161,33 @@ def _cmd_brief(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_sync_context(args: argparse.Namespace) -> int:
+    path = sync_context(_repo_root(), target_name=args.target)
+    print(f"updated context at {path}")
+    return 0
+
+
+def _cmd_log_decision(args: argparse.Namespace) -> int:
+    path = log_decision(_repo_root(), args.text)
+    print(f"logged decision to {path}")
+    return 0
+
+
+def _cmd_clear_session(args: argparse.Namespace) -> int:
+    path = clear_session(_repo_root())
+    print(f"cleared session log at {path}")
+    return 0
+
+
 def _cmd_workflow_alias(args: argparse.Namespace) -> int:
     workflow = args.workflow_slug
     guidance = getattr(args, "guidance", "") or getattr(args, "request", "")
-    path = write_workflow_brief(_repo_root(), workflow, guidance=guidance, target_name=args.target)
+    section = getattr(args, "section", None)
+    lines = getattr(args, "lines", None)
+    path = write_workflow_brief(
+        _repo_root(), workflow, guidance=guidance, target_name=args.target,
+        section=section, lines=lines,
+    )
     print(f"prepared workflow brief for '{workflow}' at {path}")
     return 0
 
@@ -223,6 +248,17 @@ def build_parser() -> argparse.ArgumentParser:
     assemble_parser.add_argument("--compile", action="store_true", help="Run pdflatex/bibtex after writing main.tex")
     assemble_parser.set_defaults(func=_cmd_assemble)
 
+    sync_context_parser = subparsers.add_parser("sync-context", help="Update context.md from actual .tex files")
+    sync_context_parser.add_argument("--target", help="Override the active target")
+    sync_context_parser.set_defaults(func=_cmd_sync_context)
+
+    log_decision_parser = subparsers.add_parser("log-decision", help="Append an editorial decision to the session log")
+    log_decision_parser.add_argument("text", help="Decision text to log")
+    log_decision_parser.set_defaults(func=_cmd_log_decision)
+
+    clear_session_parser = subparsers.add_parser("clear-session", help="Clear the session decisions log")
+    clear_session_parser.set_defaults(func=_cmd_clear_session)
+
     camera_parser = subparsers.add_parser("camera-ready", help="Build the camera-ready package")
     camera_parser.add_argument("--target", help="Override the active target")
     camera_parser.add_argument("--compile", action="store_true", help="Compile the camera-ready directory before zipping")
@@ -240,8 +276,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     draft_section_parser = subparsers.add_parser("draft-section", help="Prepare the draft-section workflow brief")
     draft_section_parser.add_argument("request", help="Section request and optional guidance")
+    draft_section_parser.add_argument("--section", help="Section filename (e.g., introduction.tex)")
     draft_section_parser.add_argument("--target", help="Override the active target")
     draft_section_parser.set_defaults(func=_cmd_workflow_alias, workflow_slug="draft-section")
+
+    edit_section_parser = subparsers.add_parser("edit-section", help="Prepare the edit-section workflow brief")
+    edit_section_parser.add_argument("request", help="Section file and edit instructions")
+    edit_section_parser.add_argument("--section", help="Section filename (e.g., introduction.tex)")
+    edit_section_parser.add_argument("--lines", help="Line range to focus on (e.g., 15-30)")
+    edit_section_parser.add_argument("--target", help="Override the active target")
+    edit_section_parser.set_defaults(func=_cmd_workflow_alias, workflow_slug="edit-section")
 
     review_parser = subparsers.add_parser("review-paper", help="Prepare the review-paper workflow brief")
     review_parser.add_argument("--guidance", default="", help="Extra review focus guidance")
@@ -252,6 +296,11 @@ def build_parser() -> argparse.ArgumentParser:
     revise_parser.add_argument("--guidance", default="", help="Review feedback or results-update guidance")
     revise_parser.add_argument("--target", help="Override the active target")
     revise_parser.set_defaults(func=_cmd_workflow_alias, workflow_slug="revise-paper")
+
+    polish_parser = subparsers.add_parser("polish", help="Prepare the polish workflow brief")
+    polish_parser.add_argument("request", nargs="?", default="", help="Polish guidance or section focus")
+    polish_parser.add_argument("--target", help="Override the active target")
+    polish_parser.set_defaults(func=_cmd_workflow_alias, workflow_slug="polish")
 
     brief_parser = subparsers.add_parser("workflow-brief", help="Write a workflow brief for adapter runtimes")
     brief_parser.add_argument("workflow", help="Workflow slug such as literature-search or revise-paper")

@@ -9,7 +9,8 @@ from pathlib import Path
 import yaml
 
 from pepper.manifest import InstallManifest
-from pepper.project import assemble_paper, camera_ready, create_journal_version, new_paper, set_target, write_workflow_brief
+from pepper.assembly import assemble_paper, camera_ready
+from pepper.workspace import clear_session, create_journal_version, log_decision, new_paper, set_target, write_workflow_brief
 from pepper.renderers import render_claude_system_prompt, render_codex_system_prompt
 from pepper.sync import MANIFEST_PATH, dev_sync_root, find_repo_root, install_or_sync
 from pepper.validate import validate_repo
@@ -165,6 +166,101 @@ def test_workflow_brief_writes_runtime_brief(tmp_path: Path) -> None:
     text = path.read_text(encoding="utf-8")
     assert "Pepper Workflow Brief: draft-paper" in text
     assert "Keep it concise." in text
+
+
+def test_session_log_lifecycle(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    install_or_sync(repo, adapters="claude")
+    new_paper(
+        repo,
+        title="Paper",
+        topic="Topic",
+        contributions=["One"],
+        venue_key="neurips",
+        paper_type="Theory",
+    )
+    # Log decisions
+    path = log_decision(repo, "removed tier analysis")
+    assert path.exists()
+    text = path.read_text(encoding="utf-8")
+    assert "removed tier analysis" in text
+    assert "Session Decisions Log" in text
+
+    log_decision(repo, "renamed DGPs to descriptive names")
+    text = path.read_text(encoding="utf-8")
+    assert "renamed DGPs" in text
+    assert text.count("- [") == 2  # two entries
+
+    # Clear session
+    path = clear_session(repo)
+    text = path.read_text(encoding="utf-8")
+    assert "Session Decisions Log" in text
+    assert "removed tier" not in text
+
+
+def test_workflow_brief_includes_session_decisions(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    install_or_sync(repo, adapters="claude")
+    new_paper(
+        repo,
+        title="Paper",
+        topic="Topic",
+        contributions=["One"],
+        venue_key="neurips",
+        paper_type="Theory",
+    )
+    log_decision(repo, "use stratified not cluster")
+    path = write_workflow_brief(repo, "draft-paper", guidance="Focus on methods.")
+    text = path.read_text(encoding="utf-8")
+    assert "Session Decisions" in text
+    assert "use stratified not cluster" in text
+
+
+def test_workflow_brief_embeds_section_content(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    install_or_sync(repo, adapters="claude")
+    new_paper(
+        repo,
+        title="Paper",
+        topic="Topic",
+        contributions=["One"],
+        venue_key="neurips",
+        paper_type="Theory",
+    )
+    sections = repo / "paper/conference/sections"
+    (sections / "introduction.tex").write_text(
+        "\\section{Introduction}\nThis is the intro.\n", encoding="utf-8"
+    )
+    path = write_workflow_brief(
+        repo, "edit-section", guidance="introduction strengthen motivation",
+        section="introduction",
+    )
+    text = path.read_text(encoding="utf-8")
+    assert "Current Section Content" in text
+    assert "This is the intro." in text
+
+
+def test_workflow_brief_line_range_focus(tmp_path: Path) -> None:
+    repo = _make_repo(tmp_path)
+    install_or_sync(repo, adapters="claude")
+    new_paper(
+        repo,
+        title="Paper",
+        topic="Topic",
+        contributions=["One"],
+        venue_key="neurips",
+        paper_type="Theory",
+    )
+    sections = repo / "paper/conference/sections"
+    content = "\\section{Introduction}\nLine 2\nLine 3\nLine 4\nLine 5\n"
+    (sections / "introduction.tex").write_text(content, encoding="utf-8")
+    path = write_workflow_brief(
+        repo, "edit-section", guidance="fix wording",
+        section="introduction", lines="2-4",
+    )
+    text = path.read_text(encoding="utf-8")
+    assert "Edit Focus (lines 2-4)" in text
+    assert "Line 2" in text
 
 
 def test_rendered_system_prompts_reference_cli() -> None:
