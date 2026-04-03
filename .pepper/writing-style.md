@@ -34,6 +34,7 @@ must follow these rules. The peer-reviewer must check for compliance.
 - Never use "we show" without actually showing it
 - Use `\citet{}` when citing as a noun ("Vaswani et al. (2017) show..."), `\citep{}` in parentheses
 - **Figure and table labels:** Always use the label assigned in the outline's Figure & Table Plan. Do not invent new label names. If the outline assigns `tab:emp_summary_stats`, use exactly `\label{tab:emp_summary_stats}`. This prevents label collisions when multiple agents write sections in parallel.
+- **Float placement:** Always use `[!t]` as the default placement for `figure`, `table`, and `algorithm` environments to place them at the top of the page. For example: `\begin{figure}[!t]`, `\begin{table}[!t]`, `\begin{algorithm}[!t]`.
 
 ---
 
@@ -45,7 +46,7 @@ package (included in all venue templates). Always wrap the `tabular` inside
 Never use `tablenotes` without the `threeparttable` wrapper.
 
 ```latex
-\begin{table}[t]
+\begin{table}[!t]
   \centering
   \caption{Description of the table.}
   \label{tab:example}
